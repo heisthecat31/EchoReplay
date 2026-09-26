@@ -2,7 +2,7 @@
 //
 // The defect AUDIT_E E3 found was invisible to a single-binary test: the arbiter's state was a
 // per-image static, and the two claimants ship in different images -- camera_control in
-// echoreplay.dll / probe_replay.dll, camera::Create's only caller in probe_camera.dll. Linking both
+// EchoReplay.dll / EchoReplay.dll, camera::Create's only caller in probe_camera.dll. Linking both
 // claimants into ONE test binary is a configuration the product does not have, so the check could
 // not fail on the thing it was written to catch.
 //

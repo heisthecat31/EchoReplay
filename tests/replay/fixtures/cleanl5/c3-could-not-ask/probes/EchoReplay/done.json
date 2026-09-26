@@ -1,7 +1,6 @@
 {
-  "probe": "probe_replay",
+  "probe": "EchoReplay",
   "verdict": "pass",
-  "provisional": false,
   "batteryRan": true,
   "levelLoadAtMs": 12000,
   "ownerDraws": 6350,
@@ -26,7 +25,8 @@
       "id": "w2f-csregister-epoch",
       "state": "asked-pass",
       "declaration": false,
-      "status": "Running"
+      "status": "Running",
+      "staleDetected": 0
     }
   ]
 }

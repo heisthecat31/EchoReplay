@@ -1,5 +1,5 @@
 {
-  "probe": "probe_replay",
+  "probe": "EchoReplay",
   "verdict": "pass",
   "provisional": false,
   "batteryRan": true,
@@ -15,17 +15,17 @@
     {
       "id": "w1c-sc7-text-diff",
       "state": "asked-pass",
-      "declaration": false
+      "declaration": true
     },
     {
       "id": "w2r-panel-drawn-over-level",
       "state": "asked-pass",
-      "declaration": false
+      "declaration": true
     },
     {
       "id": "w2f-csregister-epoch",
       "state": "asked-pass",
-      "declaration": false,
+      "declaration": true,
       "status": "Running",
       "staleDetected": 0
     }

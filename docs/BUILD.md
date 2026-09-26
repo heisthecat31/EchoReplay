@@ -35,8 +35,8 @@ Output goes to `build\bin\`:
 
 | File | What |
 |---|---|
-| `probe_replay.dll` | The plugin. Copy it to `<game folder>\bin\win10\plugins\`. |
-| `echoreplay.dll` | The same plugin without its diagnostic observer module. Install one or the other, never both. |
+| `EchoReplay.dll` | The plugin. Copy it to `<game folder>\bin\win10\plugins\`. |
+| `echoreplay_core.dll` | The plugin without its diagnostic observer module, for the tests. Never install it. |
 | `echodemo.exe` | Command-line tool for recordings (below). |
 | test programs | Unit tests and self-tests. |
 

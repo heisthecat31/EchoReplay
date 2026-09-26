@@ -7,7 +7,7 @@ Two properties, both of which a unit test cannot reach because they are about sh
      is the byte-guard MinHook's Create() consults before it patches; if the row drifted from the
      binary the fallback would either refuse forever or detour into the middle of another function.
 
-  2. echoreplay.dll exports EXACTLY `Update` and `RadPluginShutdown`, undecorated, and NONE of the
+  2. echoreplay_core.dll exports EXACTLY `Update` and `RadPluginShutdown`, undecorated, and NONE of the
      eleven CNSProvider method names the engine looks up against a provider handle.
 
 Point 2 deliberately overlaps tests/exports, which is W0-1's. That check's deny-list was found inert in
@@ -167,7 +167,7 @@ def main():
         print("        the guard-row check needs the real game file and cannot be faked")
 
     # ---- 2. our export surface, against the names the engine resolves ----------------------------
-    dll = os.path.join(build, "bin", "echoreplay.dll")
+    dll = os.path.join(build, "bin", "echoreplay_core.dll")
     if not os.path.exists(dll):
         print("  FAIL  no %s -- build first" % dll)
         return 1

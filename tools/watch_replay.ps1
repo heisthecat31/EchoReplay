@@ -86,13 +86,22 @@ function Format-Duration([double]$seconds) {
     return ('{0}:{1:00}' -f [int][Math]::Floor($span.TotalMinutes), $span.Seconds)
 }
 
-# Duration, player count and level out of `echodemo info`, when the tool has been built.
+# A file this project ships: build\bin\ in a source tree, the release folder above tools\, or beside this script.
+function Find-ShippedFile([string]$name) {
+    foreach ($dir in @((Join-Path $PSScriptRoot '..\build\bin'), (Join-Path $PSScriptRoot '..'), $PSScriptRoot)) {
+        $candidate = Join-Path $dir $name
+        if (Test-Path -LiteralPath $candidate -PathType Leaf) { return (Resolve-Path -LiteralPath $candidate).ProviderPath }
+    }
+    return $null
+}
+
+# Duration, player count and level out of `echodemo info`, when the tool is present.
 function Get-CaptureInfo([string]$file) {
     $info = @{ Duration = $null; Players = $null; LevelHex = $null }
     # A legacy replay has no header to read until the plugin converts it.
     if (Test-Legacy $file) { return $info }
-    $tool = Join-Path $PSScriptRoot '..\build\bin\echodemo.exe'
-    if (Test-Path $tool) {
+    $tool = Find-ShippedFile 'echodemo.exe'
+    if ($tool) {
         try {
             foreach ($line in (& $tool info $file 2>$null)) {
                 if ($line -match '^\s*duration\s*:\s*([\d.]+)\s*s') { $info.Duration = [double]$Matches[1] }
@@ -184,20 +193,40 @@ if (-not $gameExe) {
 }
 $exe = $gameExe
 $binDir = Split-Path -Parent $exe
-$plugin = Join-Path $binDir 'plugins\probe_replay.dll'
+$plugin = Join-Path $binDir 'plugins\EchoReplay.dll'
 $loader = Join-Path $binDir 'dbgcore.dll'
 if (-not (Test-Path -LiteralPath $loader)) {
     Stop-WithReason "EchoLoader is not installed: $loader is missing. The replay plugin is loaded by EchoLoader's dbgcore.dll in bin\win10; install the loader first."
 }
 if (-not (Test-Path -LiteralPath $plugin)) {
-    Write-Host "WARNING: the replay plugin is not installed ($plugin is missing). The game will start, but no replay will open. Copy build\bin\probe_replay.dll there." -ForegroundColor Yellow
+    Write-Host "WARNING: the replay plugin is not installed ($plugin is missing). The game will start, but no replay will open. Copy EchoReplay.dll there." -ForegroundColor Yellow
 } else {
-    $built = Join-Path $PSScriptRoot '..\build\bin\probe_replay.dll'
-    if ((Test-Path $built) -and
+    $built = Find-ShippedFile 'EchoReplay.dll'
+    if ($built -and
         (Get-FileHash -LiteralPath $built).Hash -ne (Get-FileHash -LiteralPath $plugin).Hash) {
-        Write-Host "WARNING: the installed plugin is not the one built in this folder. To update it, copy $((Resolve-Path $built).ProviderPath) over $plugin." -ForegroundColor Yellow
+        Write-Host "WARNING: the installed plugin is not the one in this folder. To update it, copy $built over $plugin." -ForegroundColor Yellow
     } else {
         Say "The replay plugin is installed."
+    }
+}
+
+# Earlier builds shipped the plugin as probe_replay.dll. The loader loads every *.dll in plugins, so
+# a leftover copy would load beside EchoReplay.dll; it goes to a folder the loader never scans.
+$legacyPlugin = Join-Path $binDir 'plugins\probe_replay.dll'
+if (Test-Path -LiteralPath $legacyPlugin) {
+    $disabledDir = Join-Path $binDir 'plugins_disabled'
+    if (-not (Test-Path -LiteralPath $plugin)) {
+        Write-Host "WARNING: $legacyPlugin is an earlier version of this plugin under its old name. Copy EchoReplay.dll into plugins; this script then moves the old file out." -ForegroundColor Yellow
+    } elseif ($DryRun) {
+        Say "The old plugin $legacyPlugin would be moved to $disabledDir, so only EchoReplay.dll loads."
+    } else {
+        try {
+            $null = New-Item -ItemType Directory -Path $disabledDir -Force
+            Move-Item -LiteralPath $legacyPlugin -Destination (Join-Path $disabledDir 'probe_replay.dll') -Force
+            Say "Moved the old plugin probe_replay.dll out of plugins to $disabledDir, so only EchoReplay.dll loads. You can delete it."
+        } catch {
+            Write-Host "WARNING: could not move the old plugin $legacyPlugin out of plugins ($($_.Exception.Message)). Delete it by hand; with both installed only one of them runs." -ForegroundColor Yellow
+        }
     }
 }
 

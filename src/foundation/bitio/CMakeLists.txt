@@ -5,4 +5,4 @@ add_library(bitio STATIC
     enginewire.cpp)
 target_include_directories(bitio PUBLIC ${CMAKE_SOURCE_DIR}/src)
 target_link_libraries(bitio PRIVATE replay_flags)
-target_link_libraries(echoreplay PRIVATE bitio)
+target_link_libraries(echoreplay_core PRIVATE bitio)

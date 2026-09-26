@@ -18,5 +18,5 @@ target_include_directories(replay_voip PUBLIC ${CMAKE_SOURCE_DIR}/src)
 # ★ voip_module.cpp is compiled into the DLL, never into the library above: a REPLAY_MODULE's
 # registrar is a static object nothing references by name, so an archive member holding one is
 # dropped by the linker as unused and the module silently never runs (docs/INSTALL.md).
-target_sources(echoreplay PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/voip_module.cpp)
-target_link_libraries(echoreplay PRIVATE replay_voip)
+target_sources(echoreplay_core PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/voip_module.cpp)
+target_link_libraries(echoreplay_core PRIVATE replay_voip)

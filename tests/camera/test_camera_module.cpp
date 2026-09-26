@@ -2268,7 +2268,7 @@ TEST_CASE("camera_control::Release has three call sites and all three are in cam
             ++filesRead;
             const std::string name = e.path().lexically_relative(root).generic_string();
             // Two passes: a namespace ALIAS for camera_control makes `alias::Release()` a real
-            // call site the qualified token cannot see (tests/replay/probe_replay.cpp has one),
+            // call site the qualified token cannot see (tests/replay/observer.cpp has one),
             // so the aliases are collected first and searched for alongside.
             std::vector<std::string> tokens{qualified};
             std::vector<std::string> code;

@@ -10,4 +10,4 @@ target_include_directories(replay_verify PUBLIC ${CMAKE_SOURCE_DIR}/src)
 target_link_libraries(replay_verify PRIVATE replay_flags)
 # floor.cpp measures against the SHIPPED codec, not a model of it.
 target_link_libraries(replay_verify PUBLIC bitio)
-target_link_libraries(echoreplay PRIVATE replay_verify)
+target_link_libraries(echoreplay_core PRIVATE replay_verify)

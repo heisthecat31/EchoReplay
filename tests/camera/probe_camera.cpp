@@ -813,7 +813,7 @@ DWORD WINAPI WorkerMain(LPVOID) {
     // Read this line for what it CAN say (AUDIT_I finding 3 -- the earlier reading was not
     // executable). This probe's only claim site is camera::Create -> ClaimPoseOwner(WritePoint), so
     // when this DLL is the image that ran, the pose owner here is WritePoint and never
-    // StockFreeCam; the StockFreeCam line comes from camera_module in echoreplay.dll. And the two
+    // StockFreeCam; the StockFreeCam line comes from camera_module in EchoReplay.dll. And the two
     // never both run: bootstrap.cpp:423 refuses the single-instance claim to every image but one
     // and :450 starts WorkerMain -- hence modreg::InitAll and every module Init -- only past it. A
     // launch therefore cannot stage a cross-image conflict; the two- and three-image cases in

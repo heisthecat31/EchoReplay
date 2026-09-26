@@ -224,7 +224,7 @@ const char* BootBitPolicyName(BootBitPolicy policy);
 // have cleared the bit again. An -offline launch keeps the bit whatever else is true of it.
 //
 // ★ offlineSwitchSeen is the SWITCH, not bootstrap::OfflineHintIsCredible, deliberately: that
-// predicate needs rlay.dll to be loaded and plugins load alphabetically, so echoreplay.dll asks
+// predicate needs rlay.dll to be loaded and plugins load alphabetically, so EchoReplay.dll asks
 // before rlay exists and would get `false` on exactly the launch that must not be touched. The
 // switch has no such window, and erring towards leaving the bit alone is the safe direction.
 //

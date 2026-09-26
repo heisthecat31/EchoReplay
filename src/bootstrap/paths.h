@@ -4,7 +4,7 @@
 // cannot rely on: a launcher that sets it elsewhere still loads us, from a different plugins folder. Every
 // path here is therefore derived from our own module handle.
 //
-// The design - "clean uninstall = delete echoreplay.dll" - is only true if nothing writes
+// The design - "clean uninstall = delete EchoReplay.dll" - is only true if nothing writes
 // outside the two places INSTALL.md lists. IsWritablePath is that rule made checkable rather than
 // remembered, and every file this packet opens for writing goes through it.
 //
@@ -30,7 +30,7 @@ namespace replay {
 constexpr size_t kPathMax = 1024;
 
 // Pure: strip the file name, and if the containing directory is named `plugins`, strip that too.
-// `...\bin\win10\plugins\echoreplay.dll` -> `...\bin\win10`, which is where INSTALL.md puts the log and
+// `...\bin\win10\plugins\EchoReplay.dll` -> `...\bin\win10`, which is where INSTALL.md puts the log and
 // the state directory. A DLL that is not inside a `plugins` directory (a unit test, a probe host) keeps
 // its own directory, so nothing escapes into a parent nobody expects.
 // Returns false if `modulePath` has no directory part or the result does not fit.
@@ -46,7 +46,7 @@ bool IsUnderDirectory(const wchar_t* path, const wchar_t* root);
 bool Resolve(void* selfModule);
 bool Resolved();
 
-const wchar_t* SelfModulePath();      // ...\plugins\echoreplay.dll
+const wchar_t* SelfModulePath();      // ...\plugins\EchoReplay.dll
 const wchar_t* SelfModuleDir();       // ...\plugins
 const wchar_t* InstallRoot();         // ...\bin\win10
 const wchar_t* LogPath();             // ...\bin\win10\echoreplay.log

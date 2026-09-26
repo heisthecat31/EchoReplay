@@ -39,7 +39,7 @@
 //              scheduled it yet, so its expectations come from the launch's switches, not from a
 //              profile it assumes.
 //
-// None of this ships. echoreplay.dll installs no socket hook and no CR15NetGame::Update detour.
+// None of this ships. EchoReplay.dll installs no socket hook and no CR15NetGame::Update detour.
 
 #include <winsock2.h>
 #include <ws2tcpip.h>

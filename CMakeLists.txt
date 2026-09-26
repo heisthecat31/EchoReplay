@@ -44,17 +44,18 @@ target_compile_definitions(replay_flags_vendor INTERFACE WIN32_LEAN_AND_MEAN NOM
 
 add_subdirectory(third_party)
 
-# The product. Modules add their sources with target_sources().
+# The product core. Modules add their sources with target_sources(). echoreplay_core.dll is built for the
+# tests and is never installed; the plugin users install is EchoReplay, defined further down.
 #
 # WINDOWS_EXPORT_ALL_SYMBOLS stays OFF: the engine looks up provider method names on our module every
 # frame, so an accidental export could make the plugin look like a provider. The export surface is exactly
 # Update and RadPluginShutdown, and tests/exports pins it.
-add_library(echoreplay SHARED)
-set_target_properties(echoreplay PROPERTIES
-    OUTPUT_NAME echoreplay
+add_library(echoreplay_core SHARED)
+set_target_properties(echoreplay_core PROPERTIES
+    OUTPUT_NAME echoreplay_core
     WINDOWS_EXPORT_ALL_SYMBOLS OFF)
-target_link_libraries(echoreplay PRIVATE replay_flags minhook zstd)
-target_include_directories(echoreplay PRIVATE ${CMAKE_SOURCE_DIR}/src)
+target_link_libraries(echoreplay_core PRIVATE replay_flags minhook zstd)
+target_include_directories(echoreplay_core PRIVATE ${CMAKE_SOURCE_DIR}/src)
 
 # Test registration. Every test program and check script is listed in build/test_targets.txt, which
 # tools/test.ps1 runs.
@@ -134,30 +135,30 @@ get_property(_test_checks GLOBAL PROPERTY REPLAY_TEST_CHECKS)
 string(REPLACE ";" "\n" _test_manifest "${_test_checks}")
 file(GENERATE OUTPUT ${CMAKE_BINARY_DIR}/test_targets.txt CONTENT "${_test_manifest}\n")
 
-# probe_replay: the product plus one observer module (tests/replay/probe_replay.cpp). This is the DLL
-# users install. It reads echoreplay's own source list, so it must come after every add_subdirectory().
+# EchoReplay: the product plus one observer module (tests/replay/observer.cpp). This is the DLL
+# users install. It reads echoreplay_core's own source list, so it must come after every add_subdirectory().
 # That list must hold absolute paths (CMP0076 NEW), or a relative entry would resolve against this
 # directory and name a different file.
-get_target_property(_prod_sources echoreplay SOURCES)
-get_target_property(_prod_links   echoreplay LINK_LIBRARIES)
-get_target_property(_prod_incs    echoreplay INCLUDE_DIRECTORIES)
+get_target_property(_prod_sources echoreplay_core SOURCES)
+get_target_property(_prod_links   echoreplay_core LINK_LIBRARIES)
+get_target_property(_prod_incs    echoreplay_core INCLUDE_DIRECTORIES)
 
 if(NOT _prod_sources)
-    message(FATAL_ERROR "probe_replay: echoreplay has no SOURCES property")
+    message(FATAL_ERROR "EchoReplay: echoreplay_core has no SOURCES property")
 endif()
 foreach(_src IN LISTS _prod_sources)
     if(NOT IS_ABSOLUTE "${_src}")
-        message(FATAL_ERROR "probe_replay: echoreplay SOURCES holds the relative entry '${_src}'")
+        message(FATAL_ERROR "EchoReplay: echoreplay_core SOURCES holds the relative entry '${_src}'")
     endif()
 endforeach()
 
-set(_observer_tu ${CMAKE_SOURCE_DIR}/tests/replay/probe_replay.cpp)
-add_library(probe_replay SHARED ${_prod_sources} ${_observer_tu})
-set_target_properties(probe_replay PROPERTIES
-    OUTPUT_NAME probe_replay
+set(_observer_tu ${CMAKE_SOURCE_DIR}/tests/replay/observer.cpp)
+add_library(EchoReplay SHARED ${_prod_sources} ${_observer_tu})
+set_target_properties(EchoReplay PROPERTIES
+    OUTPUT_NAME EchoReplay
     WINDOWS_EXPORT_ALL_SYMBOLS OFF)
-target_link_libraries(probe_replay PRIVATE ${_prod_links})
-target_include_directories(probe_replay PRIVATE ${_prod_incs})
+target_link_libraries(EchoReplay PRIVATE ${_prod_links})
+target_include_directories(EchoReplay PRIVATE ${_prod_incs})
 
 function(_replay_link_closure _root _out)
     set(_seen "")

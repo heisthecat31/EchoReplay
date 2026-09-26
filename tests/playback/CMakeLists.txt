@@ -34,7 +34,7 @@ add_executable(playback_selftest test_playback.cpp test_netvarapply.cpp test_net
 # writes PawnProvision::MarkHop around the engine call -- the ONE latch every engine call issued
 # from the stage-0 tick shares (pawn_provision.h:699). replay_playback is STATIC, so only a target
 # that actually references viewer_role.cpp pulls its object and needs those symbols; that is this
-# one, echoreplay and playback_armtest, and the latter two already carry pawn_provision.cpp.
+# one, echoreplay_core and playback_armtest, and the latter two already carry pawn_provision.cpp.
 target_link_libraries(playback_selftest PRIVATE replay_flags doctest_main replay_playback replay_capture replay_demofile replay_identity_access)
 target_include_directories(playback_selftest PRIVATE ${CMAKE_SOURCE_DIR}/src)
 # The real capture L3-RUN-5 played, beside the test that reads it. A path baked in at configure

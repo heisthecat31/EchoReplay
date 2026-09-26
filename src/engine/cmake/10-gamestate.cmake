@@ -1,5 +1,5 @@
-target_sources(echoreplay PRIVATE ${CMAKE_SOURCE_DIR}/src/engine/gamestate.cpp)
-target_sources(echoreplay PRIVATE ${CMAKE_SOURCE_DIR}/src/engine/gamestate_live.cpp)
+target_sources(echoreplay_core PRIVATE ${CMAKE_SOURCE_DIR}/src/engine/gamestate.cpp)
+target_sources(echoreplay_core PRIVATE ${CMAKE_SOURCE_DIR}/src/engine/gamestate_live.cpp)
 
 add_library(replay_gamestate OBJECT
     ${CMAKE_SOURCE_DIR}/src/engine/gamestate.cpp

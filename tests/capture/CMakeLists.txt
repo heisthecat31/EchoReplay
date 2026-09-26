@@ -58,7 +58,7 @@ target_link_libraries(capture_corpus PRIVATE replay_flags replay_capture)
 target_include_directories(capture_corpus PRIVATE ${CMAKE_SOURCE_DIR}/src)
 
 # D13 / P13: the WIRING half. capture.cpp is the module translation unit and is compiled into
-# echoreplay.dll only -- replay_capture deliberately excludes it -- so until this target existed both
+# EchoReplay.dll only -- replay_capture deliberately excludes it -- so until this target existed both
 # of capture's registrations could be deleted with every suite still green. It links the real module
 # TU through the real modreg and reads the fake tick provider, the fake VoIP seam and the services
 # struct, the three places a missing registration is visible.

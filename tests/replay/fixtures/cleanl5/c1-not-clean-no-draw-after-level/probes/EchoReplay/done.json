@@ -1,11 +1,11 @@
 {
-  "probe": "probe_replay",
+  "probe": "EchoReplay",
   "verdict": "pass",
   "provisional": false,
   "batteryRan": true,
   "levelLoadAtMs": 12000,
   "ownerDraws": 6350,
-  "ownerDrawsAtLevel": 100,
+  "ownerDrawsAtLevel": 6350,
   "rows": [
     {
       "id": "w1j-launch-window-declared",
@@ -27,7 +27,7 @@
       "state": "asked-pass",
       "declaration": false,
       "status": "Running",
-      "staleDetected": 1
+      "staleDetected": 0
     }
   ]
 }

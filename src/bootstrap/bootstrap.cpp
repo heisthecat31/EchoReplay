@@ -150,7 +150,7 @@ SessionMode DetectSessionMode(bool* offlineSwitchSeen, bool* rlayLoaded) {
 
 // ★★★ THE LOAD-ORDER RE-CHECK, and it exists because the first look FAILS OPEN.
 //
-// Plugins load alphabetically, so echoreplay.dll is reached before rlay.dll. In the ordinary case we
+// Plugins load alphabetically, so EchoReplay.dll is reached before rlay.dll. In the ordinary case we
 // therefore look for rlay before it exists, disbelieve a -offline that is in fact credible, classify a
 // genuinely offline session as a live online match, and leave it UNGUARDED. That is the wrong direction
 // on the one guard standing between this project and a repeat of its production-server incident.

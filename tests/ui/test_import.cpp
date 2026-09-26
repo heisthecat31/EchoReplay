@@ -373,7 +373,7 @@ TEST_CASE("P6 legacy: unset import.dirs is Spark's folder, and nothing at all un
     // so no suite ever lists the owner's real Spark folder.
     ScratchDir dir;
     ::CreateDirectoryW(dir.File(L"plugins").c_str(), nullptr);
-    SetPathsForTest(dir.File(L"plugins\\echoreplay.dll").c_str());
+    SetPathsForTest(dir.File(L"plugins\\EchoReplay.dll").c_str());
     CHECK(ResolveImportDirs(nullptr).empty());
 }
 

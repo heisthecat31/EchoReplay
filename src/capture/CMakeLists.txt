@@ -29,7 +29,7 @@ target_include_directories(replay_capture PUBLIC ${CMAKE_SOURCE_DIR}/src)
 # up. Naming the file by absolute path from a file this packet DOES own keeps the contribution inside
 # W2-A's ownership instead of editing a shared list. Reported to the orchestrator; one line in the glob
 # makes this unnecessary.
-target_sources(echoreplay PRIVATE
+target_sources(echoreplay_core PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/capture.cpp
     # BACKLOG-1. The read-only status provider. On the DLL and not in replay_capture above,
     # because its REPLAY_MODULE registrar is referenced by nothing and a static library drops the
@@ -47,7 +47,7 @@ target_sources(echoreplay PRIVATE
 # achieved was to break all four every time a sibling's voip edit was mid-flight. A dependency
 # belongs on the target that has the call site, and declaring it in this file rather than relying on
 # src/audio/voip/CMakeLists.txt keeps it true if that file changes.
-target_link_libraries(echoreplay PRIVATE replay_capture replay_alloctrap replay_voip
+target_link_libraries(echoreplay_core PRIVATE replay_capture replay_alloctrap replay_voip
                       replay_bootstrap)
 # ★ replay_bootstrap is NAMED even though replay_voip already carries it PUBLIC, for the same reason
 # replay_voip is named above: capture.cpp's own call site -- bootstrap::OpenRequestPresent, the

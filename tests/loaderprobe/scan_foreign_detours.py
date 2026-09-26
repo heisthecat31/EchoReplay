@@ -103,7 +103,7 @@ def main():
         if not os.path.isfile(path) or ".dll" not in name.lower():
             continue
         # Our own DLL resolves engine addresses too, and that is not a foreign detour.
-        if name.lower() in ("echoreplay.dll", "probe_bootstrap.dll"):
+        if name.lower() in ("echoreplay_core.dll", "probe_bootstrap.dll"):
             continue
         try:
             rvas, detours = scan(path)

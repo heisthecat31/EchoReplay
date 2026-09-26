@@ -1,4 +1,4 @@
-# The export surface of echoreplay.dll, pinned. Design section 2 F8b, bolded in the original:
+# The export surface of echoreplay_core.dll, pinned. Design section 2 F8b, bolded in the original:
 #
 #     "Design: export exactly Update and RadPluginShutdown. Export nothing else."
 #

@@ -5,7 +5,7 @@ replay_add_test(NAME bootstrap
     SOURCES test_md5.cpp test_paths_log.cpp test_config.cpp test_guard_modreg.cpp test_hookmgr.cpp test_offlinelock.cpp
             test_tableguard.cpp test_session_mode.cpp test_egress_redact.cpp test_inbound.cpp
             test_module_order.cpp test_detach.cpp test_livesafety.cpp test_pageprobe.cpp
-            test_offlinepatch.cpp
+            test_offlinepatch.cpp test_coexist.cpp
     LIBS replay_bootstrap)
 
 # The offline-local probe's report builder is a header in tests/loaderprobe: the document a launch

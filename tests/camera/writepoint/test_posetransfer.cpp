@@ -1,7 +1,7 @@
 // W1-H, ARCH-17 S3.3. The two halves of "the product can command a pose without killing the
 // camera the owner actually flies".
 //
-// (b) THE TRANSFER. `IReplayCamera::SetPose` is unreachable from echoreplay.dll today: camera_control
+// (b) THE TRANSFER. `IReplayCamera::SetPose` is unreachable from EchoReplay.dll today: camera_control
 //     claims StockFreeCam at bind and holds it for the session, so camera::Create's WritePoint claim
 //     can never succeed and the write point is linked, dead code. The fix is not a second arbiter and
 //     not release-then-claim -- it is one interlocked move of the token, so the holder is never

@@ -39,6 +39,19 @@ bool FileNameIs(const wchar_t* path, const wchar_t* name) {
     return path[leaf + i] == L'\0';
 }
 
+// Earlier builds shipped this plugin as probe_replay.dll. An upgrade that copies EchoReplay.dll in
+// without deleting the old file leaves both in the folder, and the loader loads every *.dll there.
+constexpr wchar_t kLegacyFileName[] = L"probe_replay.dll";
+
+bool LegacyCopyBesideUs() {
+    if (FileNameIs(SelfModulePath(), kLegacyFileName)) {
+        return false;
+    }
+    wchar_t legacy[kPathMax];
+    _snwprintf_s(legacy, kPathMax, _TRUNCATE, L"%ls\\%ls", SelfModuleDir(), kLegacyFileName);
+    return GetFileAttributesW(legacy) != INVALID_FILE_ATTRIBUTES;
+}
+
 }  // namespace
 
 bool IsModuleLoaded(const char* moduleName) {
@@ -63,8 +76,17 @@ bool ClaimInstance(Report* report) {
         return false;
     }
 
+    // Before the instance claim, so the warning is written whichever of the two copies loads first.
+    if (LegacyCopyBesideUs()) {
+        report->legacyCopyBesideUs = true;
+        log::Direct(LogLevel::Error, "coexist",
+                    "OLD PLUGIN INSTALLED: %ls\\%ls is an earlier copy of this plugin under its old name. "
+                    "The loader loads both and only the first to start runs. Delete it, or run "
+                    "tools\\watch_replay, which moves it out of plugins.", SelfModuleDir(), kLegacyFileName);
+    }
+
     // Two copies under different names both get loaded - the loader takes every *.dll in the folder, so
-    // echoreplay.dll beside "echoreplay - Copy.dll" gives two workers, two provider-slot claims and two
+    // EchoReplay.dll beside "echoreplay - Copy.dll" gives two workers, two provider-slot claims and two
     // writers on one log file. That is a realistic user mistake and this is the check for it.
     //
     // Keyed on the resolved LOG PATH and on OUR OWN PROCESS ID.

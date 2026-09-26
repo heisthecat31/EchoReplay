@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Configures and builds echoreplay.dll and every test target with MSVC + Ninja.
+    Configures and builds EchoReplay.dll and every test target with MSVC + Ninja.
 
 .DESCRIPTION
     Needs Visual Studio 2022 or newer (or its Build Tools) with the "Desktop development with C++"
@@ -171,25 +171,44 @@ if ($ninjaStampBefore -ne $ninjaStampAfter) {
 # so ninja always has work and the comparison was unreachable. Hash the sources by content instead and give
 # any file whose content moved a fresh mtime BEFORE building: ninja then cannot miss it. The class is
 # removed rather than detected, which is the only version of this that does not depend on a string.
-function Get-TrackedSourceHashes([string]$root, $git) {
-    if (-not $git) { return $null }
-    Push-Location -LiteralPath $root
-    try {
-        # tools/ is in scope because the checks certify instruments built from tools/**.cpp against this
-        # record: a source left out of it has no recorded hash, and its binary can never be told current.
-        $tracked = @(& $git.Source ls-files -- src tests third_party tools CMakeLists.txt 2>$null | Where-Object { $_ })
-        if ($LASTEXITCODE -ne 0 -or $tracked.Count -eq 0) { return $null }
+# tools/ is in scope because the checks certify instruments built from tools/**.cpp against this record: a
+# source left out of it has no recorded hash, and its binary can never be told current.
+$sourceScope = @('src', 'tests', 'third_party', 'tools', 'CMakeLists.txt')
+
+# Repo-relative paths with forward slashes, the key the checks look up. A git checkout answers with its
+# tracked files; a source download (GitHub zip, git archive) has no index, so every file in scope is listed.
+function Get-SourceList([string]$root, $git) {
+    if ($git) {
+        # Outside a repository git prints "not a git repository" on stderr, which 'Stop' turns into a
+        # terminating error in Windows PowerShell. The exit code is the answer, so let stderr pass.
+        $ErrorActionPreference = 'Continue'
+        Push-Location -LiteralPath $root
+        try { $tracked = @(& $git.Source ls-files -- $sourceScope 2>$null | Where-Object { $_ }) }
+        finally { Pop-Location }
+        if ($LASTEXITCODE -eq 0 -and $tracked.Count -gt 0) { return $tracked }
     }
-    finally { Pop-Location }
+    $prefixLength = $root.TrimEnd('\', '/').Length + 1
+    foreach ($entry in $sourceScope) {
+        $abs = Join-Path $root $entry
+        if (Test-Path -LiteralPath $abs -PathType Leaf) { $entry; continue }
+        if (-not (Test-Path -LiteralPath $abs -PathType Container)) { continue }
+        Get-ChildItem -LiteralPath $abs -Recurse -File -Force |
+            Where-Object { $_.FullName -notmatch '[\\/]__pycache__[\\/]' } |
+            ForEach-Object { $_.FullName.Substring($prefixLength).Replace('\', '/') }
+    }
+}
+
+function Get-TrackedSourceHashes([string]$root, $git) {
+    $tracked = @(Get-SourceList $root $git)
+    if ($tracked.Count -eq 0) { return $null }
     $hashes = @{}
     $sha = [Security.Cryptography.SHA256]::Create()
     try {
         foreach ($f in $tracked) {
             $abs = Join-Path $root $f
             if (-not (Test-Path -LiteralPath $abs -PathType Leaf)) { continue }
-            # Eleven agents share this tree, so a file can be held open by whoever is writing it. Leaving it
-            # out of the record makes the next build treat it as changed and rebuild it, which is the safe
-            # direction; failing the build here would make another packet's save our error.
+            # An editor can hold a file open while it saves. Leaving it out of the record makes the next
+            # build treat it as changed and rebuild it, which is the safe direction.
             try {
                 $stream = [IO.File]::OpenRead($abs)
                 try { $hashes[$f] = [BitConverter]::ToString($sha.ComputeHash($stream)).Replace('-', '') }
@@ -246,7 +265,7 @@ if ($null -ne $currentHashes) {
     }
 }
 else {
-    Write-Host 'sources  : NOT hashed (no git) - ninja mtimes are the only staleness protection in this run' -ForegroundColor Yellow
+    Write-Host 'sources  : NOT hashed (no source files found in scope) - ninja mtimes are the only staleness protection in this run' -ForegroundColor Yellow
 }
 
 $buildOutput = & $cmake.Source --build $BuildDir
@@ -270,7 +289,7 @@ if ($null -ne $currentHashes) {
     "vcvars_ver=$msvcVersion"
 ) | Set-Content -LiteralPath (Join-Path $BuildDir 'toolchain.txt') -Encoding utf8
 
-$dll = Join-Path (Join-Path $BuildDir 'bin') 'echoreplay.dll'
+$dll = Join-Path (Join-Path $BuildDir 'bin') 'EchoReplay.dll'
 if (-not (Test-Path -LiteralPath $dll)) { Fail "build reported success but $dll does not exist" }
 $dllSize = (Get-Item -LiteralPath $dll).Length
 if ($dllSize -lt 1024) { Fail "$dll is $dllSize bytes; that is the broken-linker signature" }

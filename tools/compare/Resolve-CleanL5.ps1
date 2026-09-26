@@ -69,12 +69,12 @@ function Read-CleanL5Json([string]$path) {
     catch { return $null }
 }
 
-# The observer is probe_replay's record and nothing else. Section 8.4a names it twice, in bold, because
+# The observer is EchoReplay's record and nothing else. Section 8.4a names it twice, in bold, because
 # the last reader took the egress record instead. If it is not there, that is a refusal by name.
 function Get-CleanL5ObserverPath([string]$launchDir) {
     $probes = Join-Path $launchDir 'probes'
     if (-not (Test-Path -LiteralPath $probes)) { return $null }
-    $named = Join-Path (Join-Path $probes 'probe_replay') 'done.json'
+    $named = Join-Path (Join-Path $probes 'EchoReplay') 'done.json'
     if (Test-Path -LiteralPath $named -PathType Leaf) { return $named }
     return $null
 }
@@ -96,7 +96,7 @@ function Resolve-CleanL5([string]$launchDir) {
     $observerPath = Get-CleanL5ObserverPath $launchDir
     if ($null -eq $observerPath) {
         return & $refuse ("clauses 1, 2, 3 and 4 read the OBSERVER record " +
-            "$launchDir\probes\probe_replay\done.json - written by probe_replay, NOT the egress record and NOT launch.json - and it is not on disk")
+            "$launchDir\probes\EchoReplay\done.json - written by EchoReplay, NOT the egress record and NOT launch.json - and it is not on disk")
     }
     $observer = Read-CleanL5Json $observerPath
     if ($null -eq $observer) { return & $refuse "the observer record $observerPath is not readable as JSON" }
@@ -240,7 +240,7 @@ function Invoke-CleanL5SelfTest {
     $root = Join-Path ([IO.Path]::GetTempPath()) ('cleanl5-' + [guid]::NewGuid().ToString('N'))
     function Fixture([hashtable]$launchEdit, [hashtable]$doneEdit, [string[]]$dropLaunch, [string[]]$dropDone, [array]$rows) {
         $dir = Join-Path $root ([guid]::NewGuid().ToString('N'))
-        $null = New-Item -ItemType Directory -Path (Join-Path $dir 'probes\probe_replay') -Force
+        $null = New-Item -ItemType Directory -Path (Join-Path $dir 'probes\EchoReplay') -Force
         $launch = [ordered]@{ ProcessOutcome = 'killed-by-harness'; KillReason = 'probes-complete'
             ProbesStillWaiting = @(); Contaminated = $false
         }
@@ -260,7 +260,7 @@ function Invoke-CleanL5SelfTest {
         foreach ($k in @($dropDone)) { $done.Remove($k) }
         Set-Content -LiteralPath (Join-Path $dir 'launch.json') -Encoding UTF8 -Value (
             [pscustomobject]@{ launch = [pscustomobject]$launch } | ConvertTo-Json -Depth 12)
-        Set-Content -LiteralPath (Join-Path $dir 'probes\probe_replay\done.json') -Encoding UTF8 -Value (
+        Set-Content -LiteralPath (Join-Path $dir 'probes\EchoReplay\done.json') -Encoding UTF8 -Value (
             [pscustomobject]$done | ConvertTo-Json -Depth 12)
         return $dir
     }
@@ -359,7 +359,7 @@ function Invoke-CleanL5SelfTest {
             [ordered]@{ id = 'w2f-csregister-epoch'; state = 'could-not-ask' }))
     # the artifacts themselves
     $noObserver = Fixture @{} @{} @() @() $null
-    Remove-Item -LiteralPath (Join-Path $noObserver 'probes\probe_replay\done.json') -Force
+    Remove-Item -LiteralPath (Join-Path $noObserver 'probes\EchoReplay\done.json') -Force
     Expect 'a missing observer record is REFUSED, not not-clean' 'REFUSED' 0 '' $noObserver
     $noLaunch = Fixture @{} @{} @() @() $null
     Remove-Item -LiteralPath (Join-Path $noLaunch 'launch.json') -Force

@@ -209,7 +209,7 @@ struct BarFix {
         // A bar test is a contained offline process unless it says it is a live capture; the
         // cursor claim reads that verdict now (RECORDER-2 part A / L1).
         livesafety::SetForTest(liveCapture, !liveCapture);
-        const std::wstring self = dir.File(L"plugins\\echoreplay.dll");
+        const std::wstring self = dir.File(L"plugins\\EchoReplay.dll");
         ::CreateDirectoryW(dir.File(L"plugins").c_str(), nullptr);
         SetPathsForTest(self.c_str());
         ::CreateDirectoryW(captureDir.c_str(), nullptr);

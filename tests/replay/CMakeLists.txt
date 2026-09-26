@@ -1,11 +1,11 @@
-# P3's gate check. The probe_replay TARGET is defined in the top-level CMakeLists.txt, not here: it is
-# derived from echoreplay's SOURCES property, and that property is only complete after every product
+# P3's gate check. The EchoReplay TARGET is defined in the top-level CMakeLists.txt, not here: it is
+# derived from echoreplay_core's SOURCES property, and that property is only complete after every product
 # subdirectory has appended to it. This directory holds the observer translation unit the target names,
 # the launch descriptor, and the check that asserts the derivation still holds.
 #
 # OWNER W2-R -- the design grants tests/replay/ to W2-R, and this marker states the same
 # id where tools/packet_owners.ps1 also looks for it. The top-level CMakeLists.txt block that defines
-# the probe_replay target belongs to W0-1 and lands in the commit immediately after this one.
+# the EchoReplay target belongs to W0-1 and lands in the commit immediately after this one.
 replay_add_script_check(NAME replay)
 
 # The arms, driven offline. Every input these rows read only exists inside a running game, so the

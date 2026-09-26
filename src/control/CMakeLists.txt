@@ -39,9 +39,9 @@ target_include_directories(replay_control_core PUBLIC ${CMAKE_SOURCE_DIR}/src)
 # The in-process half lands file-by-file. A name here that has no file on disk fails CONFIGURE, not
 # link, which blocks every packet's build and not just this one -- so a source is added to this list
 # in the same commit that adds the file.
-target_sources(echoreplay PRIVATE
+target_sources(echoreplay_core PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/console.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/dispatch.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/http.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/control_module.cpp)
-target_link_libraries(echoreplay PRIVATE replay_control_core)
+target_link_libraries(echoreplay_core PRIVATE replay_control_core)

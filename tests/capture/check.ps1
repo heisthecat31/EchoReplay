@@ -499,7 +499,7 @@ if ($corpus) {
 
 # ---- 5. the WIRING arm: D13 / P13 -------------------------------------------------------------
 #
-# capture.cpp is compiled into echoreplay.dll and nothing else -- replay_capture excludes it -- so
+# capture.cpp is compiled into EchoReplay.dll and nothing else -- replay_capture excludes it -- so
 # until capture_wiretest existed, deleting either of capture's registrations left every arm above
 # green. This one links the module TU through the real modreg and reads the three places a missing
 # registration is visible. Mutation-proved 2026-09-01 against a private clone of HEAD, each of the

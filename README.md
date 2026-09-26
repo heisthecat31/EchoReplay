@@ -28,14 +28,14 @@ This project is not affiliated with Ready At Dawn or Meta.
 ## Install
 
 1. Install EchoLoader.
-2. Copy `probe_replay.dll` into `<game folder>\bin\win10\plugins\`. Create `plugins` if it is missing.
-   Install only this one DLL; `echoreplay.dll` is the same plugin without its diagnostic module, and the two
-   must never be installed together.
+2. Copy `EchoReplay.dll` into `<game folder>\bin\win10\plugins\`. Create `plugins` if it is missing.
+   Install only this one DLL. `echoreplay_core.dll` in a source build is a test binary and is never installed.
+   Upgrading from an earlier version: delete the old `probe_replay.dll` from `plugins`, or let `tools\watch_replay` move it out.
 3. Start the game from inside `bin\win10`. The loader looks for `plugins` in the current folder, so a
    shortcut that starts the game from somewhere else loads nothing.
 
 If it loaded, `bin\win10\echoreplay.log` appears within a second of launch. To uninstall, delete
-`probe_replay.dll` (and optionally `echoreplay.log` and the `echoreplay\` settings folder next to it).
+`EchoReplay.dll` (and optionally `echoreplay.log` and the `echoreplay\` settings folder next to it).
 The game's files on disk are never changed.
 
 ## Record

@@ -39,8 +39,8 @@ target_include_directories(replay_audio PUBLIC ${CMAKE_SOURCE_DIR}/src)
 # ★ audio_module.cpp is compiled into the DLL, never into the library above: a REPLAY_MODULE's
 # registrar is a static object nothing references by name, so an archive member holding one is
 # dropped by the linker as unused and the module silently never runs (docs/INSTALL.md).
-target_sources(echoreplay PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/audio_module.cpp)
-target_link_libraries(echoreplay PRIVATE replay_audio)
+target_sources(echoreplay_core PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/audio_module.cpp)
+target_link_libraries(echoreplay_core PRIVATE replay_audio)
 
 # ★ W3-C's src/audio/voip/ IS ADDED FROM HERE BECAUSE THE ROOT WILL NOT ADD IT. The root's discovery
 # glob skips a nested module whose parent has a CMakeLists.txt of its own -- "a group directory that

@@ -12,7 +12,7 @@
 // So this binary compiles the three MODULE translation units -- W2-B's, W2-H's and W3-A's -- runs
 // modreg::InitAll over them in the same ascending order the DLL does, and then asks the battery what
 // is in it. Nothing here fabricates a battery: every row it observes was put there by the same lines
-// that run in echoreplay.dll.
+// that run in EchoReplay.dll.
 //
 // ★★ AND IT DRIVES A REAL SEEK. Registration is not firing. The last case writes an .echodemo,
 // loads it through the transport the module published, seeks, and turns the module's own tick --

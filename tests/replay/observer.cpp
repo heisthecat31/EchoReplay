@@ -1,6 +1,6 @@
-// The observer module of probe_replay.dll -- the product plus this one translation unit.
+// The observer module of EchoReplay.dll -- the product plus this one translation unit.
 //
-// Probe_replay links echoreplay's own SOURCES, so the code under
+// EchoReplay links echoreplay_core's own SOURCES, so the code under
 // observation IS the shipped code. This file adds no product behaviour and re-implements no product
 // path. It watches, and it writes what it saw where the harness reads.
 //
@@ -55,9 +55,9 @@
 namespace {
 
 using replay::LogLevel;
-using probe_replay::Ask;
-using probe_replay::LogFacts;
-using probe_replay::StatusFacts;
+using observer::Ask;
+using observer::LogFacts;
+using observer::StatusFacts;
 
 // The arm is a property of THIS launch or it is not a property at all (RK-11). It is read from the
 // process environment, never from the command line -- an unregistered switch voids the whole engine
@@ -68,7 +68,7 @@ enum class Arm { Capture, Playback, PlaybackIdle, Browser, Refused };
 
 replay::ReplayServices* g_services = nullptr;
 Arm g_arm = Arm::Capture;
-unsigned g_armBit = probe_replay::kArmCapture;
+unsigned g_armBit = observer::kArmCapture;
 char g_armReason[320] = {0};
 char g_probeId[128] = "W2-R-unknown";
 char g_artifactDir[MAX_PATH] = {0};
@@ -244,7 +244,7 @@ bool ResolveArtifactDir(char* dir, size_t dirN, char* probeId, size_t idN) {
 const char kLaunchMarkerName[] = "launch-marker.json";
 
 // Reads the marker out of one directory into the observer's facts. The parse is
-// probe_replay::ParseLaunchMarker, which tests/replay/test_observer.cpp drives without a game.
+// observer::ParseLaunchMarker, which tests/replay/test_observer.cpp drives without a game.
 bool ReadMarkerFrom(const char* dir) {
     if (dir == nullptr || dir[0] == '\0') {
         return false;
@@ -259,7 +259,7 @@ bool ReadMarkerFrom(const char* dir) {
     const size_t got = fread(text, 1, sizeof text - 1, fh);
     fclose(fh);
     text[got] = '\0';
-    probe_replay::ParseLaunchMarker(text, full, g_status);
+    observer::ParseLaunchMarker(text, full, g_status);
     return true;
 }
 
@@ -275,7 +275,7 @@ void LoadLaunchMarker() {
         char where[320];
         _snprintf_s(where, sizeof where, _TRUNCATE, "%s is in neither '%s' nor '%s'",
                     kLaunchMarkerName, cwd, state[0] != '\0' ? state : "(StateDir unresolved)");
-        probe_replay::LaunchMarkerAbsent(where, g_status);
+        observer::LaunchMarkerAbsent(where, g_status);
     }
     Log(LogLevel::Info, "launch marker: %s (window %s, attended %s)",
         g_status.markerPresent ? g_status.markerSource : "ABSENT",
@@ -342,10 +342,10 @@ Arm SelectArm(char* reason, size_t reasonN) {
 
 unsigned ArmBit(Arm arm) {
     switch (arm) {
-        case Arm::Playback:     return probe_replay::kArmPlayback;
-        case Arm::PlaybackIdle: return probe_replay::kArmIdle;
-        case Arm::Browser:      return probe_replay::kArmBrowser;
-        default:                return probe_replay::kArmCapture;
+        case Arm::Playback:     return observer::kArmPlayback;
+        case Arm::PlaybackIdle: return observer::kArmIdle;
+        case Arm::Browser:      return observer::kArmBrowser;
+        default:                return observer::kArmCapture;
     }
 }
 
@@ -359,7 +359,7 @@ const char* ArmName(Arm arm) {
     }
 }
 
-// Exactly one of echoreplay.dll and probe_replay.dll may be installed for a launch (section 6.2).
+// Exactly one of echoreplay_core.dll and EchoReplay.dll may be installed for a launch (section 6.2).
 // Both carry bootstrap, and coexist::ClaimInstance keys the mutex on the install root's log path, so
 // the second to attach installs nothing and files nothing -- a silence the sweep would have to
 // explain. This says so on disk instead, and it is a report, not a repair: the harness enforces the
@@ -378,19 +378,19 @@ void RecordCoexistence(char* out, size_t outN) {
     }
     *(leaf + 1) = '\0';
     char sibling[MAX_PATH];
-    _snprintf_s(sibling, sizeof sibling, _TRUNCATE, "%sechoreplay.dll", dll);
+    _snprintf_s(sibling, sizeof sibling, _TRUNCATE, "%sechoreplay_core.dll", dll);
     const bool onDisk = GetFileAttributesA(sibling) != INVALID_FILE_ATTRIBUTES;
-    const bool inProcess = GetModuleHandleA("echoreplay.dll") != nullptr;
+    const bool inProcess = GetModuleHandleA("echoreplay_core.dll") != nullptr;
     if (onDisk || inProcess) {
         g_coexistViolation = true;
         _snprintf_s(out, outN, _TRUNCATE,
-                    "COEXIST VIOLATION: echoreplay.dll is %s%s%s beside this module, so one of the two "
+                    "COEXIST VIOLATION: echoreplay_core.dll is %s%s%s beside this module, so one of the two "
                     "bootstraps lost the instance claim and measured nothing",
                     onDisk ? "installed" : "", (onDisk && inProcess) ? " and " : "",
                     inProcess ? "loaded in this process" : "");
         return;
     }
-    _snprintf_s(out, outN, _TRUNCATE, "sole plugin: echoreplay.dll is neither installed nor loaded");
+    _snprintf_s(out, outN, _TRUNCATE, "sole plugin: echoreplay_core.dll is neither installed nor loaded");
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -543,7 +543,7 @@ void SampleCsRegister(StatusFacts& s) {
     // the owner thread, as one struct read. Without this copy the producer published all twenty
     // fields and the consumer read none of them: the row answered could-not-ask on BOTH runs of
     // L5 #6 and S6.3(a) had no `renderedTotalVtxCount` on either side to subtract (L5-RUN-6 s2/s3).
-    probe_replay::CopyGuiGateFacts(r, s);
+    observer::CopyGuiGateFacts(r, s);
 
     // The `[gate ...]` counters, same read. Diagnostic() has printed them since W2-F-C2 and no
     // artifact carried them; done.json does now. The hover SOURCE travels with the hover count
@@ -577,7 +577,7 @@ void SampleCsRegister(StatusFacts& s) {
     // matched by name at the head of the line, nothing on it is parsed, and the word travels to
     // the record and to the rows so an operator grades the module's own refusal, not a zero.
     strncpy_s(s.csDiagRefusal, sizeof s.csDiagRefusal,
-              probe_replay::DiagRefusalWord(probe_replay::ClassifyDiagnostic(diag)), _TRUNCATE);
+              observer::DiagRefusalWord(observer::ClassifyDiagnostic(diag)), _TRUNCATE);
     if (diag != nullptr) {
         const char* at = nullptr;
         for (const char* p = strstr(diag, " [threads owner="); p != nullptr;
@@ -596,16 +596,16 @@ void SampleCsRegister(StatusFacts& s) {
     // with the struct read above. `draws=` appears in two groups meaning two counters, so the
     // parse keys on the group opener -- see ParseInFrameLine. A disagreement is carried to the
     // reader, which censors the row; it is never resolved here in favour of either reading.
-    probe_replay::InFrameLine inframeLine;
-    if (probe_replay::ParseInFrameLine(diag, inframeLine)) {
+    observer::InFrameLine inframeLine;
+    if (observer::ParseInFrameLine(diag, inframeLine)) {
         s.csInFramePublished = true;
-        s.csInFrameLineAgrees = probe_replay::InFrameLineAgrees(inframeLine, s);
+        s.csInFrameLineAgrees = observer::InFrameLineAgrees(inframeLine, s);
     }
 
     // The stage-0 frame-byte sample, cross-checked the same way. Two groups sit side by side on
     // this line and both carry bare decimal counters, so the parse keys on its own group opener.
-    probe_replay::Stage0Line stage0Line;
-    if (probe_replay::ParseStage0Line(diag, stage0Line)) {
+    observer::Stage0Line stage0Line;
+    if (observer::ParseStage0Line(diag, stage0Line)) {
         s.csStage0Published = true;
         s.csStage0LineAgrees = stage0Line.samples == s.csOwnerTicksSampled &&
                                stage0Line.nonzero == s.csFrameOpenAtOwnerTick &&
@@ -615,8 +615,8 @@ void SampleCsRegister(StatusFacts& s) {
     // The facade group, the third on this line, keyed on its own opener for the same reason as the
     // other two. Under a refusal the line carries no group and this parse finds nothing -- which
     // stays `not published`, and never becomes five zeros.
-    probe_replay::FacadeLine facadeLine;
-    if (probe_replay::ParseFacadeLine(diag, facadeLine)) {
+    observer::FacadeLine facadeLine;
+    if (observer::ParseFacadeLine(diag, facadeLine)) {
         s.csFacadePublished = true;
         s.csFacadeNoDrawPublished = facadeLine.nodraw;
         s.csFacadeBeginFalsePublished = facadeLine.beginfalse;
@@ -629,7 +629,7 @@ void SampleCsRegister(StatusFacts& s) {
     // The baseline the panel-drawn row differences against, taken ONCE, at the first sample on
     // which the level had been reached. Arm-independent on purpose: the level-load answer has one
     // holder and it is the [session] line, whichever arm is running.
-    const bool levelNow = probe_replay::LevelReached(g_log);
+    const bool levelNow = observer::LevelReached(g_log);
     if (!s.csDrawBaselineKnown && levelNow) {
         s.csDrawBaselineKnown = true;
         s.csDrawsAtLevel = r.marshalledDraws;
@@ -924,7 +924,7 @@ void SampleSc7(StatusFacts& s) {
     body[n] = '\0';
     s.sc7Present = true;
     s.sc7Refused = strstr(body, "\"refused\"") != nullptr;
-    probe_replay::WordAfter(body, "\"verdict\": \"", s.sc7Verdict, sizeof s.sc7Verdict, "\"");
+    observer::WordAfter(body, "\"verdict\": \"", s.sc7Verdict, sizeof s.sc7Verdict, "\"");
     if (const char* at = strstr(body, "\"declared_sites\":")) {
         s.sc7DeclaredSites = _atoi64(at + strlen("\"declared_sites\":"));
     }
@@ -964,7 +964,7 @@ void SampleSc7(StatusFacts& s) {
 void SampleStopSentinel(StatusFacts& s) {
     replay::capture::StopFactsSnapshot facts;
     if (replay::capture::LastStopFacts(facts)) {
-        probe_replay::FillFromStopFacts(s, facts, replay::MarkerSourceName(facts.markerSource));
+        observer::FillFromStopFacts(s, facts, replay::MarkerSourceName(facts.markerSource));
     } else {
         _snprintf_s(s.sentinelReadReason, sizeof s.sentinelReadReason, _TRUNCATE,
                     "no capture close has published its stop facts in this process yet, so there is "
@@ -1098,9 +1098,9 @@ ctl::Command RelSeek(int64_t deltaUs) {
     return c;
 }
 
-void RunStep(StatusFacts& s, probe_replay::Verb v, const ctl::Command& cmd, const char* asked,
+void RunStep(StatusFacts& s, observer::Verb v, const ctl::Command& cmd, const char* asked,
              int64_t target) {
-    probe_replay::TransportStep& st = s.steps[static_cast<size_t>(v)];
+    observer::TransportStep& st = s.steps[static_cast<size_t>(v)];
     st.attempted = true;
     st.askedRate = cmd.rate;
     st.target = target;
@@ -1240,14 +1240,14 @@ void RunBattery(StatusFacts& s) {
     // read at BOTH samples, because "paused" has to hold across the span, not just when it was
     // commanded.
     namespace cc = replay::camera_control;
-    RunStep(s, probe_replay::Verb::Pause, Simple(ctl::CommandId::Pause), "pause", 0);
-    s.pausedForView = probe_replay::StepFor(s, probe_replay::Verb::Pause).ok;
+    RunStep(s, observer::Verb::Pause, Simple(ctl::CommandId::Pause), "pause", 0);
+    s.pausedForView = observer::StepFor(s, observer::Verb::Pause).ok;
     // The rig binds ~1.8 s after the file loads, and this pair used to be taken
     // before that -- so `w2e-4b-view-moves-while-paused` and
     // `w2e-view-read-refusal-names-its-site` filed `not-bound` against a session that bound a
     // second later. The SAME bounded wait the cam battery uses, run here first; on an already-bound
     // rig it costs zero, and the cam battery's own call below then returns immediately.
-    const probe_replay::CamBindWait viewBind = probe_replay::AwaitCameraBind(
+    const observer::CamBindWait viewBind = observer::AwaitCameraBind(
         [] { return cc::Get() != nullptr; }, [](unsigned ms) { Sleep(ms); }, 4000, 100,
         [] { return StopRequested(); });
     (void)viewBind;
@@ -1286,7 +1286,7 @@ void RunBattery(StatusFacts& s) {
     // and 19 read that very bind. Wait for it, with a BOUND. 4000 ms is a little over twice the
     // 1.8 s the field measured; an expired bound is a fact the rows name (CamBindRefusal), not a
     // silence, and the battery cannot hang here waiting for a rig that will never come.
-    const probe_replay::CamBindWait bind = probe_replay::AwaitCameraBind(
+    const observer::CamBindWait bind = observer::AwaitCameraBind(
         []() { return cc::Get() != nullptr; },
         [](long long ms) { Sleep(static_cast<DWORD>(ms)); }, 4000, 100,
         [] { return StopRequested(); });
@@ -1304,12 +1304,12 @@ void RunBattery(StatusFacts& s) {
             s.camFacingVerticalBefore = !cc::DecomposeFacing(poseBefore.pose.quat, &yaw, &pitch);
             s.camYawBefore = yaw;
         }
-        RunStep(s, probe_replay::Verb::CamLookRelative, CamLookAngles(10.0, 0.0, false),
+        RunStep(s, observer::Verb::CamLookRelative, CamLookAngles(10.0, 0.0, false),
                 "cam look 10 0", 0);
 
         s.camLookYawAsked = 30.0;
         s.camLookPitchAsked = 0.0;
-        RunStep(s, probe_replay::Verb::CamLookAbsolute,
+        RunStep(s, observer::Verb::CamLookAbsolute,
                 CamLookAngles(s.camLookYawAsked, s.camLookPitchAsked, true), "cam look to 30 0", 0);
         cc::ViewPoseSample poseAfter{};
         s.camFacingReadAfter =
@@ -1362,8 +1362,8 @@ void RunBattery(StatusFacts& s) {
         // would score an asked-FAIL against the composer for a loss nobody in it caused. Ask at
         // both ends and let the row read the observation instead of the sentence.
         const bool rigBeforeLookAt = cc::Get() != nullptr;
-        RunStep(s, probe_replay::Verb::CamLookAtSubject, CamLookAtSelector(1), "cam look at 1", 0);
-        s.camRigAtLookAt = probe_replay::RigAcrossStep(rigBeforeLookAt, cc::Get() != nullptr);
+        RunStep(s, observer::Verb::CamLookAtSubject, CamLookAtSelector(1), "cam look at 1", 0);
+        s.camRigAtLookAt = observer::RigAcrossStep(rigBeforeLookAt, cc::Get() != nullptr);
 
         // Half B's oracle. The engine wrote ITS derivation of our selector to ci+0x26 when the
         // command set the mode; ObservedSelector reads that word back, and
@@ -1378,8 +1378,8 @@ void RunBattery(StatusFacts& s) {
                 // commands ago; camera_module Releases the singleton on unbind and L3 #28 took a
                 // level load in this very second, so Get() can be null and the loss has a name.
                 s.camSelectorReadBack =
-                    probe_replay::ReadObservedSelector(cc::Get(), &packed, &cameraIndex);
-                if (s.camSelectorReadBack == probe_replay::SelectorReadBack::Ok) {
+                    observer::ReadObservedSelector(cc::Get(), &packed, &cameraIndex);
+                if (s.camSelectorReadBack == observer::SelectorReadBack::Ok) {
                     cc::RecordSelectorObservation(1, packed, team, slot);
                     s.camSelectorObserved = true;
                     s.camSelectorPacked = static_cast<int>(packed);
@@ -1392,7 +1392,7 @@ void RunBattery(StatusFacts& s) {
             CopyWord(s.camSelectorDerivation, sizeof s.camSelectorDerivation,
                      cc::SelectorDerivationName(derived));
         }
-        RunStep(s, probe_replay::Verb::CamRelease, Simple(ctl::CommandId::CamRelease),
+        RunStep(s, observer::Verb::CamRelease, Simple(ctl::CommandId::CamRelease),
                 "cam release", 0);
     }
 
@@ -1400,7 +1400,7 @@ void RunBattery(StatusFacts& s) {
     if (a != nullptr && a->Available()) {
         const double a0 = a->AudioSeconds();
         const double t0 = SinceStartMs();
-        RunStep(s, probe_replay::Verb::SpeedHalf, SpeedCommand(0.5), "speed 0.5", 0);
+        RunStep(s, observer::Verb::SpeedHalf, SpeedCommand(0.5), "speed 0.5", 0);
         StopAwareSleep(800);
         const double a1 = a->AudioSeconds();
         const double t1 = SinceStartMs();
@@ -1410,7 +1410,7 @@ void RunBattery(StatusFacts& s) {
             s.slopeMeasured = true;
         }
     } else {
-        RunStep(s, probe_replay::Verb::SpeedHalf, SpeedCommand(0.5), "speed 0.5", 0);
+        RunStep(s, observer::Verb::SpeedHalf, SpeedCommand(0.5), "speed 0.5", 0);
         StopAwareSleep(800);
     }
 
@@ -1427,16 +1427,16 @@ void RunBattery(StatusFacts& s) {
         s.rateUnderCeiling = 1.0 + (ceiling - 1.0) * 0.5;
         s.rateOverCeiling = ceiling + 1.0;
         _snprintf_s(asked, sizeof asked, _TRUNCATE, "speed %.4g", s.rateUnderCeiling);
-        RunStep(s, probe_replay::Verb::SpeedUnderCeiling, SpeedCommand(s.rateUnderCeiling), asked, 0);
+        RunStep(s, observer::Verb::SpeedUnderCeiling, SpeedCommand(s.rateUnderCeiling), asked, 0);
         _snprintf_s(asked, sizeof asked, _TRUNCATE, "speed %.4g", ceiling);
-        RunStep(s, probe_replay::Verb::SpeedAtCeiling, SpeedCommand(ceiling), asked, 0);
+        RunStep(s, observer::Verb::SpeedAtCeiling, SpeedCommand(ceiling), asked, 0);
         _snprintf_s(asked, sizeof asked, _TRUNCATE, "speed %.4g", s.rateOverCeiling);
-        RunStep(s, probe_replay::Verb::SpeedOverCeiling, SpeedCommand(s.rateOverCeiling), asked, 0);
+        RunStep(s, observer::Verb::SpeedOverCeiling, SpeedCommand(s.rateOverCeiling), asked, 0);
     }
 
     // The jumps are taken PAUSED so each one raises exactly the discontinuity it commanded: a
     // playing transport also crosses recorded gaps, and Cause::GapCross fires the same rows.
-    RunStep(s, probe_replay::Verb::PauseAgain, Simple(ctl::CommandId::Pause), "pause", 0);
+    RunStep(s, observer::Verb::PauseAgain, Simple(ctl::CommandId::Pause), "pause", 0);
 
     // P17-B T18. `goto next` with nothing to go to, asked BEFORE the battery makes its own
     // bookmark -- after `mark` there is one and the empty-sidecar refusal is unreachable for
@@ -1448,7 +1448,7 @@ void RunBattery(StatusFacts& s) {
         s.bookmarksAtStartKnown = true;
         s.bookmarksAtStart = atStart.bookmarkCount;
     }
-    RunStep(s, probe_replay::Verb::GotoNextNoMarkers, GotoStep(true), "goto next", 0);
+    RunStep(s, observer::Verb::GotoNextNoMarkers, GotoStep(true), "goto next", 0);
 
     // P17-B T14. The signed percentage never reaches the dispatcher: control::command.cpp
     // refuses it at the parser, which is the surface both the console line and the panel's
@@ -1462,16 +1462,16 @@ void RunBattery(StatusFacts& s) {
 
     const int64_t mid = static_cast<int64_t>(duration / 2);
     _snprintf_s(asked, sizeof asked, _TRUNCATE, "seek %lld us", static_cast<long long>(mid));
-    RunStep(s, probe_replay::Verb::Seek, WholeCommand(ctl::CommandId::Seek, mid), asked, mid);
+    RunStep(s, observer::Verb::Seek, WholeCommand(ctl::CommandId::Seek, mid), asked, mid);
 
     // The bookmark records wherever the playhead is when the command RUNS, so its target is the
     // read-back after the step and not the number we asked to seek to.
-    RunStep(s, probe_replay::Verb::Mark, Simple(ctl::CommandId::Mark), "mark", 0);
-    probe_replay::TransportStep& mark = s.steps[static_cast<size_t>(probe_replay::Verb::Mark)];
+    RunStep(s, observer::Verb::Mark, Simple(ctl::CommandId::Mark), "mark", 0);
+    observer::TransportStep& mark = s.steps[static_cast<size_t>(observer::Verb::Mark)];
     mark.target = mark.playheadAfter;
 
-    RunStep(s, probe_replay::Verb::StepForward, WholeCommand(ctl::CommandId::Step, 1), "step +1", 0);
-    RunStep(s, probe_replay::Verb::StepBack, WholeCommand(ctl::CommandId::Step, -1), "step -1", 0);
+    RunStep(s, observer::Verb::StepForward, WholeCommand(ctl::CommandId::Step, 1), "step +1", 0);
+    RunStep(s, observer::Verb::StepBack, WholeCommand(ctl::CommandId::Step, -1), "step -1", 0);
 
     // Clause 4 of w2r-step-moves-by-ticks, askable at last: W2-B published the tick table (382990f),
     // so the boundary comes from the SAME accessor StepTicks lands on rather than from a spacing
@@ -1481,10 +1481,10 @@ void RunBattery(StatusFacts& s) {
     // answered, leaves the clause unasked and the row keeps saying `boundary-not-published`, which
     // is a different statement from "not a boundary": NearestTickUs is also false BEFORE the first
     // recorded boundary, which a reverse step can legitimately reach.
-    const probe_replay::TransportStep& fwdStep =
-        s.steps[static_cast<size_t>(probe_replay::Verb::StepForward)];
-    const probe_replay::TransportStep& bakStep =
-        s.steps[static_cast<size_t>(probe_replay::Verb::StepBack)];
+    const observer::TransportStep& fwdStep =
+        s.steps[static_cast<size_t>(observer::Verb::StepForward)];
+    const observer::TransportStep& bakStep =
+        s.steps[static_cast<size_t>(observer::Verb::StepBack)];
     if (fwdStep.ok && fwdStep.readBack && bakStep.ok && bakStep.readBack) {
         int64_t fwdBoundaryUs = 0;
         int64_t bakBoundaryUs = 0;
@@ -1503,25 +1503,25 @@ void RunBattery(StatusFacts& s) {
         const int64_t label = static_cast<int64_t>(replay::ui::RoundNumberAt(0));
         const int64_t at = replay::ui::RoundTimeUs(0);
         _snprintf_s(asked, sizeof asked, _TRUNCATE, "round %lld", static_cast<long long>(label));
-        RunStep(s, probe_replay::Verb::Round, WholeCommand(ctl::CommandId::Round, label), asked, at);
+        RunStep(s, observer::Verb::Round, WholeCommand(ctl::CommandId::Round, label), asked, at);
     } else if (s.roundsKnown) {
         // ARCH-21 S5.5: zero rounds is a LEGAL file and SeekRound refuses every number on it. The
         // refusal is the behaviour under test, so it has to be ASKED FOR -- a battery that skips
         // the command on an empty table leaves the one arm that can catch a silent clamp unrun.
-        RunStep(s, probe_replay::Verb::Round, WholeCommand(ctl::CommandId::Round, 1), "round 1", 0);
+        RunStep(s, observer::Verb::Round, WholeCommand(ctl::CommandId::Round, 1), "round 1", 0);
     }
 
     // Away from the bookmark first: a `goto` issued where the playhead already is cannot tell a
     // working jump from one that does nothing.
     const int64_t away = static_cast<int64_t>(duration / 4);
     _snprintf_s(asked, sizeof asked, _TRUNCATE, "seek %lld us", static_cast<long long>(away));
-    RunStep(s, probe_replay::Verb::SeekAway, WholeCommand(ctl::CommandId::Seek, away), asked, away);
+    RunStep(s, observer::Verb::SeekAway, WholeCommand(ctl::CommandId::Seek, away), asked, away);
 
     disp::Snapshot marked;
     disp::ReadSnapshot(&marked);
     const int64_t bookmark = static_cast<int64_t>(marked.bookmarkCount);
     _snprintf_s(asked, sizeof asked, _TRUNCATE, "goto %lld", static_cast<long long>(bookmark));
-    RunStep(s, probe_replay::Verb::Goto, WholeCommand(ctl::CommandId::Goto, bookmark), asked, 0);
+    RunStep(s, observer::Verb::Goto, WholeCommand(ctl::CommandId::Goto, bookmark), asked, 0);
 
     // P17-B T15-T17, the bookmark WALK. A second mark late in the file, back to 0, then
     // `goto next` twice (which must reach the two marks in order, never the first twice),
@@ -1530,19 +1530,19 @@ void RunBattery(StatusFacts& s) {
     // above is still scored against the file as it was.
     const int64_t late = static_cast<int64_t>(duration - duration / 4);
     _snprintf_s(asked, sizeof asked, _TRUNCATE, "seek %lld us", static_cast<long long>(late));
-    RunStep(s, probe_replay::Verb::SeekLate, WholeCommand(ctl::CommandId::Seek, late), asked,
+    RunStep(s, observer::Verb::SeekLate, WholeCommand(ctl::CommandId::Seek, late), asked,
             late);
-    RunStep(s, probe_replay::Verb::MarkSecond, Simple(ctl::CommandId::Mark), "mark", 0);
-    probe_replay::TransportStep& mark2 =
-        s.steps[static_cast<size_t>(probe_replay::Verb::MarkSecond)];
+    RunStep(s, observer::Verb::MarkSecond, Simple(ctl::CommandId::Mark), "mark", 0);
+    observer::TransportStep& mark2 =
+        s.steps[static_cast<size_t>(observer::Verb::MarkSecond)];
     mark2.target = mark2.playheadAfter;
 
-    RunStep(s, probe_replay::Verb::SeekZero, WholeCommand(ctl::CommandId::Seek, 0), "seek 0",
+    RunStep(s, observer::Verb::SeekZero, WholeCommand(ctl::CommandId::Seek, 0), "seek 0",
             0);
-    RunStep(s, probe_replay::Verb::GotoNextFirst, GotoStep(true), "goto next", 0);
-    RunStep(s, probe_replay::Verb::GotoNextSecond, GotoStep(true), "goto next", 0);
-    RunStep(s, probe_replay::Verb::GotoNextAtEnd, GotoStep(true), "goto next", 0);
-    RunStep(s, probe_replay::Verb::GotoPrev, GotoStep(false), "goto prev", 0);
+    RunStep(s, observer::Verb::GotoNextFirst, GotoStep(true), "goto next", 0);
+    RunStep(s, observer::Verb::GotoNextSecond, GotoStep(true), "goto next", 0);
+    RunStep(s, observer::Verb::GotoNextAtEnd, GotoStep(true), "goto next", 0);
+    RunStep(s, observer::Verb::GotoPrev, GotoStep(false), "goto prev", 0);
 
     // P17-B T11-T13, the RELATIVE nudges -- the panel's own -10s/+1s buttons. The delta is
     // ten seconds unless the file is too short to hold one, in which case it is an eighth of
@@ -1552,9 +1552,9 @@ void RunBattery(StatusFacts& s) {
                               ? 10ll * 1000000
                               : static_cast<int64_t>(duration / 8);
     _snprintf_s(asked, sizeof asked, _TRUNCATE, "seek +%lld", static_cast<long long>(nudge / 1000000));
-    RunStep(s, probe_replay::Verb::SeekRelForward, RelSeek(nudge), asked, nudge);
+    RunStep(s, observer::Verb::SeekRelForward, RelSeek(nudge), asked, nudge);
     _snprintf_s(asked, sizeof asked, _TRUNCATE, "seek -%lld", static_cast<long long>(nudge / 1000000));
-    RunStep(s, probe_replay::Verb::SeekRelBack, RelSeek(-nudge), asked, -nudge);
+    RunStep(s, observer::Verb::SeekRelBack, RelSeek(-nudge), asked, -nudge);
     {
         disp::Snapshot here;
         disp::ReadSnapshot(&here);
@@ -1563,7 +1563,7 @@ void RunBattery(StatusFacts& s) {
         const int64_t past = -(here.playheadUs + static_cast<int64_t>(duration));
         _snprintf_s(asked, sizeof asked, _TRUNCATE, "seek %lld us (past the start)",
                     static_cast<long long>(past));
-        RunStep(s, probe_replay::Verb::SeekRelClampStart, RelSeek(past), asked, past);
+        RunStep(s, observer::Verb::SeekRelClampStart, RelSeek(past), asked, past);
     }
 
     // "and back": a negative rate, then the playhead sampled across several published ticks. One
@@ -1575,9 +1575,9 @@ void RunBattery(StatusFacts& s) {
     // clamp rather than a landing.
     {
         static const unsigned kPct[] = {25u, 50u, 90u};
-        static const probe_replay::Verb kAbsVerb[] = {
-            probe_replay::Verb::SeekAbs25, probe_replay::Verb::SeekAbs50,
-            probe_replay::Verb::SeekAbs90};
+        static const observer::Verb kAbsVerb[] = {
+            observer::Verb::SeekAbs25, observer::Verb::SeekAbs50,
+            observer::Verb::SeekAbs90};
         for (size_t i = 0; i < sizeof kPct / sizeof kPct[0]; ++i) {
             // duration/100 first: a long capture in microseconds overflows int64 well before
             // this matters, but the division-first form costs nothing and cannot.
@@ -1589,7 +1589,7 @@ void RunBattery(StatusFacts& s) {
         }
     }
 
-    RunStep(s, probe_replay::Verb::Reverse, SpeedCommand(-1.0), "speed -1", 0);
+    RunStep(s, observer::Verb::Reverse, SpeedCommand(-1.0), "speed -1", 0);
     {
         disp::Snapshot r;
         disp::ReadSnapshot(&r);
@@ -1605,7 +1605,7 @@ void RunBattery(StatusFacts& s) {
 
     // Back to 1.0x and left running: the file playing out to its end IS this arm's declared
     // completion point, so the battery must not leave the transport parked.
-    RunStep(s, probe_replay::Verb::Play, Simple(ctl::CommandId::Play), "play", 0);
+    RunStep(s, observer::Verb::Play, Simple(ctl::CommandId::Play), "play", 0);
     Log(LogLevel::Info, "battery complete: %u of %u step(s) answered, slope %.4f over %.0f ms "
         "(measured %d)", s.stepsAnswered, s.stepsAttempted, s.slope, s.slopeWindowMs,
         s.slopeMeasured ? 1 : 0);
@@ -1628,10 +1628,10 @@ void RunBattery(StatusFacts& s) {
 // here.
 // ---------------------------------------------------------------------------------------------
 void SampleBrowser(StatusFacts& s) {
-    // The level-load answer comes from probe_replay::LevelReached -- [session]'s own state line --
+    // The level-load answer comes from observer::LevelReached -- [session]'s own state line --
     // and not from the entity bind, which is what made L5 report "level-not-reached" over a loaded
     // level (ARCH-10 4.1 row 4).
-    const bool levelReached = probe_replay::LevelReached(g_log);
+    const bool levelReached = observer::LevelReached(g_log);
     if (levelReached) {
         InterlockedExchange(&g_levelReached, 1);
     }
@@ -1643,13 +1643,13 @@ void SampleBrowser(StatusFacts& s) {
     s.panelVisible = replay::ui::PanelVisible();
     if (!levelReached) {
         char why[400] = {0};
-        probe_replay::LevelLoadReason(g_log, why, sizeof why);
+        observer::LevelLoadReason(g_log, why, sizeof why);
         _snprintf_s(s.browserReason, sizeof s.browserReason, _TRUNCATE,
                     "%s (after %.0f ms), so there is nothing for the browser to be opened over",
                     why, SinceStartMs());
     } else if (!s.browserOpenRequested) {
         char why[400] = {0};
-        probe_replay::LevelLoadReason(g_log, why, sizeof why);
+        observer::LevelLoadReason(g_log, why, sizeof why);
         _snprintf_s(s.browserReason, sizeof s.browserReason, _TRUNCATE,
                     "%s; the tick has not yet opened the browser", why);
     } else {
@@ -1724,7 +1724,7 @@ bool CompletionReached(char* why, size_t n) {
             // wrong one. State 7 is LOADING the level -- the camera rig bound 14.8 s after it
             // on the recorded run, and the record filed at 7 carried a false asked-fail for
             // w2e-camera-rig-probe against a rig that had not been built.
-            if (!probe_replay::InGameReached(g_log)) {
+            if (!observer::InGameReached(g_log)) {
                 _snprintf_s(why, n, _TRUNCATE,
                             "not-in-game: [session] never reported NetGame state 9 (in game); the file is at %lld of %lld us. Loading a level is not having one",
                             static_cast<long long>(playhead),
@@ -1741,7 +1741,7 @@ bool CompletionReached(char* why, size_t n) {
             // one cannot fire without it. Left in place because deleting it would make the two
             // level facts one, and a launch that reaches 9 without any level state line at all
             // is a log this observer should refuse rather than complete over.
-            if (!probe_replay::LevelReached(g_log)) {
+            if (!observer::LevelReached(g_log)) {
                 _snprintf_s(why, n, _TRUNCATE,
                             "played-with-no-world: the file played out (%lld of %lld us) and "
                             "[session] never reported NetGame state 7, 8 or 9, so nothing was "
@@ -1774,7 +1774,7 @@ bool CompletionReached(char* why, size_t n) {
             //
             // The word this branch prints is LevelLoadReason's, not one composed here, so the
             // completion predicate and the row cannot disagree about why the arm is waiting.
-            if (!probe_replay::LevelReached(g_log)) {
+            if (!observer::LevelReached(g_log)) {
                 _snprintf_s(why, n, _TRUNCATE,
                             "%s. This arm declares completesAt 'match' and the sweep scores that "
                             "word on level load, so a record filed from the menu would be TRUNCATED "
@@ -1803,7 +1803,7 @@ bool CompletionReached(char* why, size_t n) {
             // levelLoadAtMs), not from the open. L5 re-run 3's 174621 ms was survivalMs minus the
             // open and included 13.6 s during which no level existed.
             double levelMs = 0.0;
-            const double from = probe_replay::LevelLoadMonotonicMs(g_log, &levelMs) &&
+            const double from = observer::LevelLoadMonotonicMs(g_log, &levelMs) &&
                                         levelMs > g_browserOpenedMs
                                     ? levelMs
                                     : g_browserOpenedMs;
@@ -1864,7 +1864,7 @@ bool RecordIsProvisional() {
     if (g_arm == Arm::Playback && !g_status.batteryComplete) {
         return true;
     }
-    return !probe_replay::LevelReached(g_log);
+    return !observer::LevelReached(g_log);
 }
 
 void WriteRecord(WriteReason reason) {
@@ -1883,7 +1883,7 @@ void WriteRecord(WriteReason reason) {
     }
 
     size_t rowCount = 0;
-    const probe_replay::RowSpec* rows = probe_replay::Rows(&rowCount);
+    const observer::RowSpec* rows = observer::Rows(&rowCount);
 
     static char answers[131072];
     answers[0] = '\0';
@@ -1896,13 +1896,13 @@ void WriteRecord(WriteReason reason) {
         // <SYM16>, and a detail cut mid-evidence reads to an operator exactly like a short one.
         char detail[2048] = {0};
         Ask outcome = Ask::CouldNotAsk;
-        if (!probe_replay::EvaluateRow(rows[i].id, g_log, g_status, &outcome, detail, sizeof detail)) {
+        if (!observer::EvaluateRow(rows[i].id, g_log, g_status, &outcome, detail, sizeof detail)) {
             continue;
         }
         // Every could-not-ask sentence in a provisional record is an absence claim with a
         // horizon, and it says so. Applied here, once, so no row can be added without it.
         if (provisional && outcome == Ask::CouldNotAsk) {
-            probe_replay::AppendProvisionalHorizon(detail, sizeof detail, g_status.observedMs,
+            observer::AppendProvisionalHorizon(detail, sizeof detail, g_status.observedMs,
                                                   playheadUs);
         }
         if (outcome == Ask::Pass) {
@@ -1916,7 +1916,7 @@ void WriteRecord(WriteReason reason) {
         _snprintf_s(head, sizeof head, _TRUNCATE,
                     "%s    {\"id\": \"%s\", \"filedBy\": \"%s\", \"state\": \"%s\", \"detail\": \"",
                     listed == 0 ? "" : ",\n", rows[i].id, rows[i].filedBy,
-                    probe_replay::AskWord(outcome));
+                    observer::AskWord(outcome));
         strncat_s(answers, sizeof answers, head, _TRUNCATE);
         AppendEscaped(answers, sizeof answers, detail);
         strncat_s(answers, sizeof answers, "\"}", _TRUNCATE);
@@ -1971,7 +1971,7 @@ void WriteRecord(WriteReason reason) {
     // its launch, which is what W1-J requires. A state the module would not spell files nothing.
     {
         const replay::egress::Report& eg = replay::egress::Current();
-        probe_replay::EgressFacts ef;
+        observer::EgressFacts ef;
         ef.state = replay::egress::ArmStateName(eg.state);
         ef.armedBy = replay::egress::ArmTriggerName(eg.trigger);
         ef.hooksJson = replay::egress::HookNamesJson();
@@ -1984,13 +1984,13 @@ void WriteRecord(WriteReason reason) {
         ef.redactionRefusal = replay::egress::RedactionRefusalReason();
         ef.armedAtMs = eg.armedAtMs;
         ef.refused = eg.refusedRemote;
-        probe_replay::AppendEgressObject(record, sizeof record, ef);
+        observer::AppendEgressObject(record, sizeof record, ef);
     }
 
     // The panel counters as FIELDS on the record, so the L5 #6 runner grades what
     // the module published instead of parsing a row's prose. Absent means unread throughout, and a
     // self-named refusal replaces the published group rather than zeroing it.
-    probe_replay::AppendCsRegisterObject(record, sizeof record, g_status);
+    observer::AppendCsRegisterObject(record, sizeof record, g_status);
 
     char markerSource[MAX_PATH];
     strncpy_s(markerSource, sizeof markerSource,
@@ -2150,9 +2150,9 @@ bool Init(replay::ReplayServices* services) {
                                 sizeof g_status.subjDerivationUncertifiedToken};
         for (size_t i = 0; i < sizeof kCauses / sizeof kCauses[0]; ++i) {
             const char* spelling = cc::SubjectResolveName(kCauses[i]);
-            const unsigned len = probe_replay::TokenLen(spelling);
+            const unsigned len = observer::TokenLen(spelling);
             if (len > g_status.subjTokenLongestLen) { g_status.subjTokenLongestLen = len; }
-            if (!probe_replay::PublishToken(kBufs[i], kCaps[i], spelling)) {
+            if (!observer::PublishToken(kBufs[i], kCaps[i], spelling)) {
                 ++g_status.subjTokenDropped;
                 Log(LogLevel::Warn,
                     "camera_control SubjectResolve %u spells %u bytes and does not fit its %u-byte "

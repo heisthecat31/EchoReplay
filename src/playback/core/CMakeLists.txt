@@ -53,5 +53,5 @@ target_include_directories(replay_playback PUBLIC ${CMAKE_SOURCE_DIR}/src)
 # rendering "No replay transport has registered yet" was the only thing in the tree that noticed.
 # Verified and wired are different properties, and every test here drove the library directly, so not
 # one of them could tell the difference.
-target_sources(echoreplay PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/playback_module.cpp)
-target_link_libraries(echoreplay PRIVATE replay_playback)
+target_sources(echoreplay_core PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/playback_module.cpp)
+target_link_libraries(echoreplay_core PRIVATE replay_playback)

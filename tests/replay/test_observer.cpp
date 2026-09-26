@@ -21,7 +21,7 @@
 #include "../../src/generated/facts_generated.h"
 #include "../../tests/replay/observer_rows.h"
 
-using namespace probe_replay;
+using namespace observer;
 
 namespace {
 
@@ -52,7 +52,7 @@ const char* kStateInGame =
     "04:16:42.901 INFO [session] NetGame state 8 (ready for game) -> 9 (in game)";
 // The observer's own heartbeat. It is the ONLY line in the log that carries both clocks -- a wall
 // stamp and the SinceStartMs() the probe's stamps are on -- so it is the anchor everything else is
-// converted through (probe_replay.cpp:975 writes it).
+// converted through (observer.cpp:975 writes it).
 const char* kSurvive =
     "04:16:33.073 INFO [observer] SURVIVE 5000 ms, heartbeat 6, arm BROWSER";
 // VERBATIM from the RECORDED L5 re-run 3 log,
@@ -1948,7 +1948,7 @@ TEST_CASE("the published group censors a Report read that disagrees with it") {
 }
 
 // RETROACTIVE, against L5 #4's own recorded observer record
-// (launch run L5-d7cd260, its probes/probe_replay/done.json): it was written
+// (launch run L5-d7cd260, its probes/EchoReplay/done.json): it was written
 // before any of this existed and carries NO row-2.5 and NO frame-open field. Both rows must say
 // which field is missing and neither may fail -- an absent field is not a failed measurement.
 TEST_CASE("L5 #4's record: both in-frame rows could-not-ask by name, neither fails") {
@@ -2999,7 +2999,7 @@ TEST_CASE("a capture close that closed no capture is not a stop the sentinel can
 // -------------------------------------------------------------------------------------------
 // W1-J's egress record. The harness has exactly one probe-side source for the last layer, and L5
 // filed none: it fell back to the game log and reported the collection defect. These drive the
-// composer the way probe_replay.cpp calls it, with the values the product's accessors return.
+// composer the way observer.cpp calls it, with the values the product's accessors return.
 // -------------------------------------------------------------------------------------------
 
 TEST_CASE("the egress record carries the product's own state word, and its hook set") {
@@ -3885,7 +3885,7 @@ TEST_CASE("the pre-rename space noun is not matched, and both camera rows say so
 // ============================================================================================
 // AUD-L5 section 12 item 8 -- THE DESTINATION SET. L5 #3's record carried "16/16 hooks, 60
 // refused" and not one host, so "the blocker did its job" was not falsifiable. These drive the
-// record writer the way probe_replay.cpp calls it, with the bodies egress.h's accessors return.
+// record writer the way observer.cpp calls it, with the bodies egress.h's accessors return.
 // ============================================================================================
 namespace {
 
@@ -4213,8 +4213,8 @@ TEST_CASE("the record stays valid JSON at a destination set far larger than L5's
 // W2-F C1-R2's `[stage0 frameopen ...]` group, and the neighbour it must not read.
 // ---------------------------------------------------------------------------------------------
 TEST_CASE("the [stage0 ...] group is parsed by group, never by the neighbouring counters") {
-    using probe_replay::ParseStage0Line;
-    using probe_replay::Stage0Line;
+    using observer::ParseStage0Line;
+    using observer::Stage0Line;
 
     // One real line: both groups present, and their magnitudes deliberately swapped between the
     // two fixtures. A reader that took the first number after `[` -- or the first `samples=`-like
@@ -4259,7 +4259,7 @@ TEST_CASE("the [stage0 ...] group is parsed by group, never by the neighbouring 
 // ---------------------------------------------------------------------------------------------
 namespace {
 
-void Answered(probe_replay::TransportStep& st, const char* asked, bool ok, const char* said) {
+void Answered(observer::TransportStep& st, const char* asked, bool ok, const char* said) {
     st.attempted = true;
     st.submitted = true;
     st.answered = true;
@@ -4273,7 +4273,7 @@ void Answered(probe_replay::TransportStep& st, const char* asked, bool ok, const
 // A launch on which every verb worked: the transport followed each command and the residue battery
 // answered each of the six jumps.
 StatusFacts WorkingBattery() {
-    using probe_replay::Verb;
+    using observer::Verb;
     StatusFacts s;
     s.transportPresent = true;
     s.durationUs = 200000000;
@@ -4290,7 +4290,7 @@ StatusFacts WorkingBattery() {
     s.reversePlayheadLast = 99000000;
     s.reverseSamples = 9;
 
-    probe_replay::TransportStep* st = s.steps;
+    observer::TransportStep* st = s.steps;
     Answered(st[(size_t)Verb::Pause], "pause", true, "paused at 0 us");
     st[(size_t)Verb::Pause].state = 0;
     Answered(st[(size_t)Verb::SpeedHalf], "speed 0.5", true, "speed 0.5 (playing)");
@@ -4319,7 +4319,7 @@ StatusFacts WorkingBattery() {
     };
     unsigned long long acc = 12;
     for (int i = 0; i < 6; ++i) {
-        probe_replay::TransportStep& j = st[(size_t)jumps[i].v];
+        observer::TransportStep& j = st[(size_t)jumps[i].v];
         Answered(j, jumps[i].asked, true, "ok");
         j.state = 0;
         j.playheadBefore = jumps[i].before;
@@ -4389,7 +4389,7 @@ TEST_CASE("cs-space-candidates: L3's no-level topology says no level, never alia
     LogFacts f;
     StatusFacts s;
     f.OnLine(CandidateLine("NotReady/CapacityOverBlock", "null", "null", "null", "null").c_str());
-    REQUIRE_FALSE(probe_replay::LevelReached(f));
+    REQUIRE_FALSE(observer::LevelReached(f));
     CHECK(Ask1("cs-space-candidates", f, s) == Ask::CouldNotAsk);
     CHECK(DetailMentions("no map was loaded and there was no level space to ask about"));
     CHECK_FALSE(DetailMentions("ALIASED"));
@@ -4400,7 +4400,7 @@ TEST_CASE("cs-space-candidates: L3's no-level topology says no level, never alia
     withLevel.OnLine("04:16:38.073 INFO [session] NetGame state 5 (lobby) -> 7 (loading level)");
     withLevel.OnLine(CandidateLine("NotReady/CapacityOverBlock", "null", "null", "null",
                                    "null").c_str());
-    REQUIRE(probe_replay::LevelReached(withLevel));
+    REQUIRE(observer::LevelReached(withLevel));
     CHECK(Ask1("cs-space-candidates", withLevel, s) != Ask::CouldNotAsk);
 }
 
@@ -4436,7 +4436,7 @@ TEST_CASE("playback completion needs the level and the battery, not just the fil
     // about a second before a healthy launch reaches `in game`. No level line was ever written.
     LogFacts noLevel;
     noLevel.OnLine("04:16:38.042 INFO [session] NetGame state 4 (loading global) -> 5 (lobby)");
-    REQUIRE_FALSE(probe_replay::LevelReached(noLevel));
+    REQUIRE_FALSE(observer::LevelReached(noLevel));
     CHECK(Ask1(kId, noLevel, CompletedPlayback()) == Ask::CouldNotAsk);
     CHECK(DetailMentions("PLAYED WITH NO WORLD"));
     CHECK(DetailMentions("NetGame state 9 (in game)"));
@@ -4475,7 +4475,7 @@ TEST_CASE("playback completion needs the level and the battery, not just the fil
 }
 
 TEST_CASE("a seek that does not move the playhead is an asked-fail") {
-    using probe_replay::Verb;
+    using observer::Verb;
     LogFacts f;
     StatusFacts s = WorkingBattery();
     // The mutant the whole row exists for: ui::SeekUs returns true and SeekTo does nothing.
@@ -4492,7 +4492,7 @@ TEST_CASE("a seek that does not move the playhead is an asked-fail") {
 }
 
 TEST_CASE("a discontinuity that moved no residue counter is an asked-fail naming it") {
-    using probe_replay::Verb;
+    using observer::Verb;
     LogFacts f;
     StatusFacts s = WorkingBattery();
     s.steps[(size_t)Verb::Seek].residueAfter = s.steps[(size_t)Verb::Seek].residueBefore;
@@ -4525,7 +4525,7 @@ TEST_CASE("a discontinuity that moved no residue counter is an asked-fail naming
 }
 
 TEST_CASE("an over-ceiling rate passes only when it was refused WITH the number") {
-    using probe_replay::Verb;
+    using observer::Verb;
     LogFacts f;
     // Accepted above the ceiling: the engine stops accelerating and says nothing, so this is the
     // control that silently does nothing.
@@ -4538,7 +4538,7 @@ TEST_CASE("an over-ceiling rate passes only when it was refused WITH the number"
     // Refused, and the sentence does not carry the ceiling: a refusal that names no number sends
     // the user tuning blind, so it is not this gate working.
     StatusFacts mute = WorkingBattery();
-    probe_replay::TransportStep& over = mute.steps[(size_t)Verb::SpeedOverCeiling];
+    observer::TransportStep& over = mute.steps[(size_t)Verb::SpeedOverCeiling];
     _snprintf_s(over.said, sizeof over.said, _TRUNCATE, "speed refused: that rate is too high");
     CHECK(Ask1("w2r-rate-above-ceiling-refused", f, mute) == Ask::Fail);
     CHECK(DetailMentions("does not name the number"));
@@ -4551,7 +4551,7 @@ TEST_CASE("an over-ceiling rate passes only when it was refused WITH the number"
 }
 
 TEST_CASE("a step driven on the raw transport reds the dispatch-path row") {
-    using probe_replay::Verb;
+    using observer::Verb;
     LogFacts f;
     StatusFacts s = WorkingBattery();
     // The defect RES-TRANSPORT-CMDS found: the step happened, and not through the seam that
@@ -4572,7 +4572,7 @@ TEST_CASE("a step driven on the raw transport reds the dispatch-path row") {
 }
 
 TEST_CASE("reverse, play/pause and goto each key on what the transport did, not on the answer") {
-    using probe_replay::Verb;
+    using observer::Verb;
     LogFacts f;
     StatusFacts still = WorkingBattery();
     still.reversePlayheadLast = still.reversePlayheadFirst;
@@ -4670,7 +4670,7 @@ TEST_CASE("W2-R cam: the bind wait is bounded, and it actually waits (L3-RUN-5 F
     const long long bindAtMs = 1765;
     long long clock = 0;
     int asks = 0;
-    const probe_replay::CamBindWait late = probe_replay::AwaitCameraBind(
+    const observer::CamBindWait late = observer::AwaitCameraBind(
         [&]() { ++asks; return clock >= bindAtMs; }, [&](long long ms) { clock += ms; }, 4000, 100);
     CHECK(late.bound);
     CHECK(asks > 1);  // one ask cannot see a late bind; this reds if the wait is taken out
@@ -4680,7 +4680,7 @@ TEST_CASE("W2-R cam: the bind wait is bounded, and it actually waits (L3-RUN-5 F
 
     // A rig that never binds does not hang the battery, and the wait it burned is reported.
     long long slept = 0;
-    const probe_replay::CamBindWait never = probe_replay::AwaitCameraBind(
+    const observer::CamBindWait never = observer::AwaitCameraBind(
         []() { return false; }, [&](long long ms) { slept += ms; }, 4000, 100);
     CHECK_FALSE(never.bound);
     CHECK(never.waitedMs == 4000);
@@ -4688,7 +4688,7 @@ TEST_CASE("W2-R cam: the bind wait is bounded, and it actually waits (L3-RUN-5 F
 
     // Already bound costs nothing: the wait must not delay a launch whose rig is up.
     long long idleSleep = 0;
-    const probe_replay::CamBindWait already = probe_replay::AwaitCameraBind(
+    const observer::CamBindWait already = observer::AwaitCameraBind(
         []() { return true; }, [&](long long ms) { idleSleep += ms; }, 4000, 100);
     CHECK(already.bound);
     CHECK(already.waitedMs == 0);
@@ -4827,8 +4827,8 @@ TEST_CASE("playback completion waits for NetGame state 9, not state 7") {
 
     LogFacts loading;
     loading.OnLine("18:50:47.102 INFO [session] NetGame state 5 (lobby) -> 7 (loading level)");
-    REQUIRE(probe_replay::LevelReached(loading));
-    REQUIRE_FALSE(probe_replay::InGameReached(loading));
+    REQUIRE(observer::LevelReached(loading));
+    REQUIRE_FALSE(observer::InGameReached(loading));
     CHECK(Ask1(kId, loading, CompletedPlayback()) == Ask::CouldNotAsk);
     CHECK(DetailMentions("PLAYED WITH NO WORLD"));
     CHECK(DetailMentions("did not follow to 9"));
@@ -4837,7 +4837,7 @@ TEST_CASE("playback completion waits for NetGame state 9, not state 7") {
     LogFacts inGame;
     inGame.OnLine("18:50:47.102 INFO [session] NetGame state 5 (lobby) -> 7 (loading level)");
     inGame.OnLine("18:51:01.907 INFO [session] NetGame state 8 (ready for game) -> 9 (in game)");
-    REQUIRE(probe_replay::InGameReached(inGame));
+    REQUIRE(observer::InGameReached(inGame));
     CHECK(Ask1(kId, inGame, CompletedPlayback()) == Ask::Pass);
     CHECK(DetailMentions("state 9 (in game)"));
     CHECK(DetailMentions("NetGame state 8 (ready for game) -> 9 (in game)"));
@@ -5591,7 +5591,7 @@ StatusFacts RelSeekReply(const char* said, long long landedUs);
 // product code, so the strings are carried here -- but what these fixtures are FOR is the
 // LENGTHS: `DerivationUncertified` is 103 bytes and used to be copied with _TRUNCATE into a
 // char[40], which published a 39-byte prefix that could never match anything the product said.
-// PublishSubjectTokens publishes them exactly as probe_replay::Init does, through PublishToken,
+// PublishSubjectTokens publishes them exactly as observer::Init does, through PublishToken,
 // so a buffer that shrinks back reds here instead of silently matching nothing.
 const char* const kSubjNoSuchSubject = "no player occupies that selector";
 const char* const kSubjRosterUnreadable = "the roster could not be read";
@@ -5643,7 +5643,7 @@ StatusFacts Cam9() {
              "cam look at 1: aimed at player 1 from (1.000, 2.000, 3.000), yaw 44.0 "
              "pitch -3.0, regime commanded, source camera-instance");
     s.camSelectorObserved = true;
-    s.camSelectorReadBack = probe_replay::SelectorReadBack::Ok;
+    s.camSelectorReadBack = observer::SelectorReadBack::Ok;
     s.camSelectorCertified = true;
     s.camSelectorPacked = 0x0104;
     s.camSelectorExpected = s.camSelectorPacked;   // certified: expected IS what was read
@@ -5988,8 +5988,8 @@ TEST_CASE("p10-cam-9 scores the packing and the aim, post-composer") {
     CHECK(Ask1("p10-cam-9", f, noRig) == Ask::CouldNotAsk);
 }
 
-// DIAG-PROBE-CRASH (L3-RUN-28). `probe_replay.dll+0x60cf0` = RunBattery @ probe_replay.cpp:1345,
-// called from `+0x5ca0b` = ObserverWorker @ probe_replay.cpp:2052, `access=read va=0x0`, on the
+// DIAG-PROBE-CRASH (L3-RUN-28). `EchoReplay.dll+0x60cf0` = RunBattery @ observer.cpp:1345,
+// called from `+0x5ca0b` = ObserverWorker @ observer.cpp:2052, `access=read va=0x0`, on the
 // probe's own CreateThread worker (tid 46952). The line was
 // `cc::Get()->ObservedSelector(&packed, &cameraIndex)`, and Get() answers null the moment
 // camera_module unbinds -- which the engine log's `[LEVELLOAD] Loading level` in that same second
@@ -6021,27 +6021,27 @@ TEST_CASE("W2-R cam: the selector read-back survives a rig released under it (L3
     uint16_t cameraIndex = kUnwrittenCamera;
 
     // The crash condition itself. A null control is a RESULT here, and nothing is dereferenced.
-    CHECK(probe_replay::ReadObservedSelector(static_cast<const FakeControl*>(nullptr), &packed,
+    CHECK(observer::ReadObservedSelector(static_cast<const FakeControl*>(nullptr), &packed,
                                              &cameraIndex) ==
-          probe_replay::SelectorReadBack::RigReleased);
+          observer::SelectorReadBack::RigReleased);
     CHECK(packed == kUnwritten);   // the out-params are left alone: there was no answer to write
     CHECK(cameraIndex == kUnwrittenCamera);
-    CHECK(strcmp(probe_replay::SelectorReadBackName(probe_replay::SelectorReadBack::RigReleased),
+    CHECK(strcmp(observer::SelectorReadBackName(observer::SelectorReadBack::RigReleased),
                  "rig-released") == 0);
 
     // A rig that is there and declines is a DIFFERENT could-not-ask, and must not read as the loss.
     FakeControl declines;
     declines.answer = false;
-    CHECK(probe_replay::ReadObservedSelector(&declines, &packed, &cameraIndex) ==
-          probe_replay::SelectorReadBack::NoAnswer);
+    CHECK(observer::ReadObservedSelector(&declines, &packed, &cameraIndex) ==
+          observer::SelectorReadBack::NoAnswer);
     CHECK(declines.calls == 1);
     CHECK(packed == kUnwritten);
 
     FakeControl answers;
     answers.word = kAnswer;
     answers.camera = kAnswerCamera;
-    CHECK(probe_replay::ReadObservedSelector(&answers, &packed, &cameraIndex) ==
-          probe_replay::SelectorReadBack::Ok);
+    CHECK(observer::ReadObservedSelector(&answers, &packed, &cameraIndex) ==
+          observer::SelectorReadBack::Ok);
     CHECK(packed == kAnswer);
     CHECK(cameraIndex == kAnswerCamera);
 
@@ -6053,7 +6053,7 @@ TEST_CASE("W2-R cam: the selector read-back survives a rig released under it (L3
     StatusFacts released = Cam9();
     released.camSelectorObserved = false;
     released.camSelectorCertified = false;
-    released.camSelectorReadBack = probe_replay::SelectorReadBack::RigReleased;
+    released.camSelectorReadBack = observer::SelectorReadBack::RigReleased;
     CHECK(EvaluateRow("p10-cam-9", f, released, &out, detail, sizeof detail));
     CHECK(out == Ask::CouldNotAsk);
     CHECK(strstr(detail, "RELEASED before the read-back") != nullptr);
@@ -6064,7 +6064,7 @@ TEST_CASE("W2-R cam: the selector read-back survives a rig released under it (L3
     StatusFacts declined = Cam9();
     declined.camSelectorObserved = false;
     declined.camSelectorCertified = false;
-    declined.camSelectorReadBack = probe_replay::SelectorReadBack::NoAnswer;
+    declined.camSelectorReadBack = observer::SelectorReadBack::NoAnswer;
     CHECK(EvaluateRow("p10-cam-9", f, declined, &out, detail, sizeof detail));
     CHECK(out == Ask::CouldNotAsk);
     CHECK(strstr(detail, "could not be read back") != nullptr);
@@ -6090,7 +6090,7 @@ TEST_CASE("W2-R cam: a rig released across `cam look at` is the same named defer
     snprintf(st.said, sizeof st.said, "%s", kRigGone);
     released.camSelectorObserved = false;
     released.camSelectorCertified = false;
-    released.camRigAtLookAt = probe_replay::RigPresence::Released;
+    released.camRigAtLookAt = observer::RigPresence::Released;
     CHECK(EvaluateRow("p10-cam-9", f, released, &out, detail, sizeof detail));
     CHECK(out == Ask::CouldNotAsk);
     CHECK(strstr(detail, "RELEASED across") != nullptr);
@@ -6101,22 +6101,22 @@ TEST_CASE("W2-R cam: a rig released across `cam look at` is the same named defer
     // The observation is what settles it, not the sentence: an UNOBSERVED rig with the very same
     // refusal text is still the composer finding, so this fix cannot be swallowing real failures.
     StatusFacts unobserved = released;
-    unobserved.camRigAtLookAt = probe_replay::RigPresence::NotAsked;
+    unobserved.camRigAtLookAt = observer::RigPresence::NotAsked;
     CHECK(EvaluateRow("p10-cam-9", f, unobserved, &out, detail, sizeof detail));
     CHECK(out == Ask::Fail);
     CHECK(strstr(detail, "a refusal nobody in this row's chain issued") != nullptr);
 
     // And a rig that WAS present across the step leaves every composer arm exactly as it was.
     StatusFacts present = released;
-    present.camRigAtLookAt = probe_replay::RigPresence::Present;
+    present.camRigAtLookAt = observer::RigPresence::Present;
     CHECK(Ask1("p10-cam-9", f, present) == Ask::Fail);
 
     // Both ends are asked, because a release DURING the dispatch is the case that produces the
     // wrong-word refusal and only the after-sample can see it.
-    CHECK(probe_replay::RigAcrossStep(true, true) == probe_replay::RigPresence::Present);
-    CHECK(probe_replay::RigAcrossStep(true, false) == probe_replay::RigPresence::Released);
-    CHECK(probe_replay::RigAcrossStep(false, true) == probe_replay::RigPresence::Released);
-    CHECK(strcmp(probe_replay::RigPresenceName(probe_replay::RigPresence::Released),
+    CHECK(observer::RigAcrossStep(true, true) == observer::RigPresence::Present);
+    CHECK(observer::RigAcrossStep(true, false) == observer::RigPresence::Released);
+    CHECK(observer::RigAcrossStep(false, true) == observer::RigPresence::Released);
+    CHECK(strcmp(observer::RigPresenceName(observer::RigPresence::Released),
                  "rig-released") == 0);
 }
 
@@ -6128,7 +6128,7 @@ TEST_CASE("W2-R cam: the bind wait abandons on teardown instead of burning its b
     long long stopAt = 400; // facts-ok: AUDIO.LISTENER_COUNT_OFF a clock reading in ms, not that offset
     int asks = 0;
 
-    const probe_replay::CamBindWait tornDown = probe_replay::AwaitCameraBind(
+    const observer::CamBindWait tornDown = observer::AwaitCameraBind(
         [&]() { ++asks; return false; },                 // the rig never binds
         [&](long long ms) { clock += ms; }, 4000, 100,
         [&]() { return clock >= stopAt; });
@@ -6141,20 +6141,20 @@ TEST_CASE("W2-R cam: the bind wait abandons on teardown instead of burning its b
 
     // A stop that never comes still waits its whole budget -- so `stopped` cannot be a constant.
     long long slept = 0;
-    const probe_replay::CamBindWait never = probe_replay::AwaitCameraBind(
+    const observer::CamBindWait never = observer::AwaitCameraBind(
         []() { return false; }, [&](long long ms) { slept += ms; }, 4000, 100,
         []() { return false; });
     CHECK_FALSE(never.stopped);
     CHECK(never.waitedMs == 4000);
 
     // A rig that binds is not reported as a teardown.
-    const probe_replay::CamBindWait bound = probe_replay::AwaitCameraBind(
+    const observer::CamBindWait bound = observer::AwaitCameraBind(
         []() { return true; }, [](long long) {}, 4000, 100, []() { return false; });
     CHECK(bound.bound);
     CHECK_FALSE(bound.stopped);
 
     // The overload without a stop predicate is the old behaviour, unchanged.
-    const probe_replay::CamBindWait plain = probe_replay::AwaitCameraBind(
+    const observer::CamBindWait plain = observer::AwaitCameraBind(
         []() { return false; }, [](long long) {}, 4000, 100);
     CHECK_FALSE(plain.stopped);
     CHECK(plain.waitedMs == plain.budgetMs);
@@ -6501,7 +6501,7 @@ TEST_CASE("w2r-residue-fires-on-discontinuity reads the same counter as its sibl
 // The Report -> StatusFacts copy, and the two done.json groups it feeds.
 //
 // The double is not a stand-in for product behaviour: `CopyGuiGateFacts` IS the shipped code and
-// `probe_replay.cpp` instantiates the same template on the real `csregister::Report`, so a field
+// `observer.cpp` instantiates the same template on the real `csregister::Report`, so a field
 // spelled or typed differently there does not build. What the double buys is a DISTINCT value in
 // every field, without which a swapped or dropped assignment cannot fail.
 // ---------------------------------------------------------------------------------------------
@@ -7470,7 +7470,7 @@ TEST_CASE("W2-B: an EMPTY candidate set is a different finding from a set that f
 
 TEST_CASE("W2-H: a process with no mixer cannot be asked for a slope, and the operand is the 0.50x line") {
     // The refusal word is the PRODUCT's, and this is the control that notices it being retired.
-    CHECK(SourceContains("src/audio/audiorate.cpp", probe_replay::kWwiseNotInitialised));
+    CHECK(SourceContains("src/audio/audiorate.cpp", observer::kWwiseNotInitialised));
     CHECK(SourceContains("src/audio/audio_module.cpp", "CSoundPlayer not resolved"));
     CHECK(SourceContains("src/audio/audio_module.cpp", "audio rate control not armed at bind time"));
 
@@ -7616,10 +7616,10 @@ TEST_CASE("W2-A: the playerstats stream, as the product's reader decoded it") {
 
 TEST_CASE("W2-R: the step row's spread decides its own sentence") {
     // L3-RUN-7 F6: the row explained a zero spread with the sentence for a non-zero one.
-    CHECK(strstr(probe_replay::StepSpreadReason(0), "ON a tick boundary") != nullptr);
-    CHECK(strstr(probe_replay::StepSpreadReason(0), "mid-tick") == nullptr);
-    CHECK(strstr(probe_replay::StepSpreadReason(17), "mid-tick") != nullptr);
-    CHECK(strstr(probe_replay::StepSpreadReason(-17), "mid-tick") != nullptr);
+    CHECK(strstr(observer::StepSpreadReason(0), "ON a tick boundary") != nullptr);
+    CHECK(strstr(observer::StepSpreadReason(0), "mid-tick") == nullptr);
+    CHECK(strstr(observer::StepSpreadReason(17), "mid-tick") != nullptr);
+    CHECK(strstr(observer::StepSpreadReason(-17), "mid-tick") != nullptr);
 }
 
 // =============================================================================================

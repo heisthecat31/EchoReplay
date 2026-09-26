@@ -385,7 +385,7 @@ struct Report {
     uint64_t frameOpenAtOwnerTickNonZero = 0;
     uint64_t frameOpenAtOwnerTickLastNonZeroTick = 0;
     // ** ARCH-20 S5 -- the `ui-gui-begin-gate` field block. W2-R's row is the READER of
-    // every field here and re-derives none of them; probe_replay.cpp copies them out of THIS
+    // every field here and re-derives none of them; observer.cpp copies them out of THIS
     // struct, so a Report without them fails to compile rather than writing a confident zero.
     //
     // The four context-relative fields are 0 whenever `guiImguiBaseValid` is false, and the row

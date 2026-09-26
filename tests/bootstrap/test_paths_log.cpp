@@ -39,15 +39,15 @@ std::wstring TempFile(const wchar_t* prefix) {
 }  // namespace
 
 TEST_CASE("the install root is the plugins folder's parent, and only when it really is plugins") {
-    CHECK(Root(L"C:\\game\\bin\\win10\\plugins\\echoreplay.dll") == L"C:\\game\\bin\\win10");
+    CHECK(Root(L"C:\\game\\bin\\win10\\plugins\\EchoReplay.dll") == L"C:\\game\\bin\\win10");
     // Case-insensitive, because Windows is and the folder is not ours to name.
-    CHECK(Root(L"C:\\game\\bin\\win10\\PLUGINS\\echoreplay.dll") == L"C:\\game\\bin\\win10");
+    CHECK(Root(L"C:\\game\\bin\\win10\\PLUGINS\\EchoReplay.dll") == L"C:\\game\\bin\\win10");
     // Not inside a plugins folder: keep our own directory rather than reaching into a parent that has
     // nothing to do with us. A test binary and the loader probe both land here.
-    CHECK(Root(L"D:\\build\\bin\\echoreplay.dll") == L"D:\\build\\bin");
+    CHECK(Root(L"D:\\build\\bin\\EchoReplay.dll") == L"D:\\build\\bin");
     // A directory that merely starts with "plugins" is not the plugins directory.
-    CHECK(Root(L"C:\\game\\bin\\plugins_old\\echoreplay.dll") == L"C:\\game\\bin\\plugins_old");
-    CHECK(Root(L"echoreplay.dll") == L"<refused>");
+    CHECK(Root(L"C:\\game\\bin\\plugins_old\\EchoReplay.dll") == L"C:\\game\\bin\\plugins_old");
+    CHECK(Root(L"EchoReplay.dll") == L"<refused>");
     CHECK(Root(L"") == L"<refused>");
 }
 
@@ -64,7 +64,7 @@ TEST_CASE("containment compares whole path components") {
 }
 
 TEST_CASE("the write policy admits exactly the log and the state directory") {
-    replay::SetPathsForTest(L"C:\\game\\bin\\win10\\plugins\\echoreplay.dll");
+    replay::SetPathsForTest(L"C:\\game\\bin\\win10\\plugins\\EchoReplay.dll");
     REQUIRE(replay::Resolved());
     CHECK(std::wstring(replay::LogPath()) == L"C:\\game\\bin\\win10\\echoreplay.log");
     CHECK(std::wstring(replay::StateDir()) == L"C:\\game\\bin\\win10\\echoreplay");
@@ -258,7 +258,7 @@ TEST_CASE("the capture directory rule is one string, pinned byte for byte") {
 }
 
 TEST_CASE("the redirected capture directory is a named child of the state directory") {
-    replay::SetPathsForTest(L"C:\\game\\bin\\win10\\plugins\\echoreplay.dll");
+    replay::SetPathsForTest(L"C:\\game\\bin\\win10\\plugins\\EchoReplay.dll");
     wchar_t out[replay::kPathMax] = {};
 
     REQUIRE(replay::ResolveCaptureDir(nullptr, out, replay::kPathMax));
@@ -383,7 +383,7 @@ TEST_CASE("an oversized log is archived under the state directory rather than ap
     GetTempPathW(MAX_PATH, tmp);
     const std::wstring dir = std::wstring(tmp) + L"perf1rot";
     CreateDirectoryW(dir.c_str(), nullptr);
-    replay::SetPathsForTest((dir + L"\\plugins\\echoreplay.dll").c_str());
+    replay::SetPathsForTest((dir + L"\\plugins\\EchoReplay.dll").c_str());
 
     const std::wstring logPath = replay::LogPath();
     const std::wstring archive = std::wstring(replay::StateDir()) + L"\\echoreplay.prev.log";

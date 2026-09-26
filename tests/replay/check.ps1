@@ -1,8 +1,8 @@
 ﻿# P3's gate check. One question, asked of the build system rather than of a comment:
 #
-#   does probe_replay.dll contain the product's sources, all of them, and exactly one file more?
+#   does EchoReplay.dll contain the product's sources, all of them, and exactly one file more?
 #
-# The design notes derive probe_replay from echoreplay's own SOURCES property precisely so the two
+# The design notes derive EchoReplay from echoreplay_core's own SOURCES property precisely so the two
 # binaries cannot drift. A derivation nothing checks is a derivation that survives being replaced by a
 # hand-typed list, which is what F11 found in the plan's first draft - so the claim is asserted here
 # against CMake's own record of the link graph (C5's target_manifest.json), not against CMake text.
@@ -57,7 +57,7 @@ function Get-StaleReason([string]$full) {
 
 # The two files this check speaks for: the observer, and the list that derives the target. A stale
 # either way and the manifest below describes a build nobody asked for.
-foreach ($subject in @((Join-Path $repo 'tests\replay\probe_replay.cpp'), (Join-Path $repo 'tests/replay/observer_rows.h'), (Join-Path $repo 'tests/replay/test_observer.cpp'), (Join-Path $repo 'CMakeLists.txt'))) {
+foreach ($subject in @((Join-Path $repo 'tests\replay\observer.cpp'), (Join-Path $repo 'tests/replay/observer_rows.h'), (Join-Path $repo 'tests/replay/test_observer.cpp'), (Join-Path $repo 'CMakeLists.txt'))) {
     if (-not (Test-Path -LiteralPath $subject)) { Fail "missing: $subject"; continue }
     $why = Get-StaleReason $subject
     if ($why) { Fail "staleness: $why" } else { Pass "current: $(Split-Path -Leaf $subject)" }
@@ -68,7 +68,7 @@ $manifestPath = Join-Path $build 'target_manifest.json'
 if (-not (Test-Path -LiteralPath $manifestPath)) {
     Write-Host "  FAIL no $manifestPath - configure did not write the target manifest, so nothing here can be asked"
     
-Write-Host "GATE-RESULT checked=$checked subject=probe_replay-object-list-vs-echoreplay+staleness+export-pin+descriptor-denominator+carries-bootstrap+sc7-read-only"
+Write-Host "GATE-RESULT checked=$checked subject=EchoReplay-object-list-vs-echoreplay_core+staleness+export-pin+descriptor-denominator+carries-bootstrap+sc7-read-only"
     exit 1
 }
 $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
@@ -76,17 +76,17 @@ $rows = @{}
 foreach ($row in $manifest.targets) { $rows[[string]$row.target] = $row }
 
 $rowsMissing = $false
-foreach ($name in @('echoreplay', 'probe_replay')) {
+foreach ($name in @('echoreplay_core', 'EchoReplay')) {
     if (-not $rows.ContainsKey($name)) { Fail "the manifest has no row for $name"; $rowsMissing = $true }
 }
 if ($rowsMissing) {
-    Write-Host "GATE-RESULT checked=$checked subject=probe_replay-object-list-vs-echoreplay+staleness+export-pin+descriptor-denominator+carries-bootstrap+sc7-read-only"
+    Write-Host "GATE-RESULT checked=$checked subject=EchoReplay-object-list-vs-echoreplay_core+staleness+export-pin+descriptor-denominator+carries-bootstrap+sc7-read-only"
     exit 1
 }
 
-$prodSources = @($rows['echoreplay'].sources | ForEach-Object { ([string]$_).ToLowerInvariant() })
-$probeSources = @($rows['probe_replay'].sources | ForEach-Object { ([string]$_).ToLowerInvariant() })
-$observer = 'tests/replay/probe_replay.cpp'
+$prodSources = @($rows['echoreplay_core'].sources | ForEach-Object { ([string]$_).ToLowerInvariant() })
+$probeSources = @($rows['EchoReplay'].sources | ForEach-Object { ([string]$_).ToLowerInvariant() })
+$observer = 'tests/replay/observer.cpp'
 
 # â˜… THE CLAIM, BOTH WAYS. "The probe has one extra file" is half the property: a probe MISSING one of
 # the product's files would also be a divergence, and a count alone cannot tell the two apart.
@@ -94,26 +94,26 @@ $missing = @($prodSources | Where-Object { $probeSources -notcontains $_ })
 $extra = @($probeSources | Where-Object { $prodSources -notcontains $_ })
 
 if ($prodSources.Count -lt 10) {
-    Fail ("echoreplay's manifest row lists only $($prodSources.Count) source(s); the product is populated " +
+    Fail ("echoreplay_core's manifest row lists only $($prodSources.Count) source(s); the product is populated " +
           'from twelve subdirectories, so this manifest is not describing the product')
 } else {
-    Pass "echoreplay carries $($prodSources.Count) sources"
+    Pass "echoreplay_core carries $($prodSources.Count) sources"
 }
 if ($missing.Count -gt 0) {
-    Fail ("probe_replay is missing $($missing.Count) of the product's own sources, so it is not the product " +
+    Fail ("EchoReplay is missing $($missing.Count) of the product's own sources, so it is not the product " +
           'plus an observer: ' + (($missing | Select-Object -First 5) -join ', '))
 } else {
-    Pass 'probe_replay carries every source echoreplay carries'
+    Pass 'EchoReplay carries every source echoreplay_core carries'
 }
 if ($extra.Count -eq 1 -and $extra[0] -eq $observer) {
-    Pass "probe_replay's only extra translation unit is $observer"
+    Pass "EchoReplay's only extra translation unit is $observer"
 } else {
-    Fail ("probe_replay's extra sources are [" + ($extra -join ', ') + "]; exactly one was expected, $observer. " +
+    Fail ("EchoReplay's extra sources are [" + ($extra -join ', ') + "]; exactly one was expected, $observer. " +
           'A second file here means the observer has grown a private copy of something the product owns')
 }
 
 $bootstrapAndTick = $true
-foreach ($name in @('echoreplay', 'probe_replay')) {
+foreach ($name in @('echoreplay_core', 'EchoReplay')) {
     if (-not $rows[$name].carriesBootstrap) { Fail "$name does not carry src/bootstrap/bootstrap.cpp"; $bootstrapAndTick = $false }
     if (-not $rows[$name].carriesTick) { Fail "$name does not carry the tick"; $bootstrapAndTick = $false }
 }
@@ -122,19 +122,19 @@ foreach ($name in @('echoreplay', 'probe_replay')) {
 if ($bootstrapAndTick) { Pass 'both targets carry bootstrap and the tick, which is why only one may be installed' }
 
 # --- the binary itself
-$dll = Join-Path (Join-Path $build 'bin') 'probe_replay.dll'
-if (Test-Path -LiteralPath $dll) { Pass "probe_replay.dll is built ($dll)" } else { Fail "no $dll" }
+$dll = Join-Path (Join-Path $build 'bin') 'EchoReplay.dll'
+if (Test-Path -LiteralPath $dll) { Pass "EchoReplay.dll is built ($dll)" } else { Fail "no $dll" }
 
 # --- the export pin. tests/exports owns the surface; this asserts it was EXTENDED to the new target
-# rather than left pinning echoreplay alone, because an unpinned DLL whose symbols the engine can
+# rather than left pinning echoreplay_core alone, because an unpinned DLL whose symbols the engine can
 # GetProcAddress is the hazard WINDOWS_EXPORT_ALL_SYMBOLS OFF exists for.
 $exportsCheck = Join-Path $repo 'tests\exports\check.ps1'
 if (-not (Test-Path -LiteralPath $exportsCheck)) {
     Fail "no $exportsCheck"
-} elseif ((Get-Content -LiteralPath $exportsCheck -Raw) -match 'probe_replay\.dll') {
-    Pass 'tests/exports pins probe_replay.dll as well as echoreplay.dll'
+} elseif ((Get-Content -LiteralPath $exportsCheck -Raw) -match 'EchoReplay\.dll') {
+    Pass 'tests/exports pins EchoReplay.dll as well as echoreplay_core.dll'
 } else {
-    Fail 'tests/exports/check.ps1 does not name probe_replay.dll, so the new DLL has no pinned export surface'
+    Fail 'tests/exports/check.ps1 does not name EchoReplay.dll, so the new DLL has no pinned export surface'
 }
 
 
@@ -257,7 +257,7 @@ function Get-FileOpens([string]$code) {
 # single reference is the finding. std::filesystem's mutators are on the list for the same reason:
 # a remove() or a rename() over the artifact needs no open at all.
 # CreateFileA is NOT on the list: the observer's own log tailer opens the game log through it,
-# read-only (probe_replay.cpp, GENERIC_READ | OPEN_EXISTING), so a presence test on the name would
+# read-only (observer.cpp, GENERIC_READ | OPEN_EXISTING), so a presence test on the name would
 # red on a legitimate reader. Its MODE is censused separately below, which is the same rule the
 # stdio family gets. Matching is CASE-SENSITIVE and word-anchored: `-match '_open'` is
 # case-insensitive in PowerShell and hits ECHOREPLAY_OPEN, which is a gate that reds on an env name.
@@ -403,7 +403,7 @@ if (-not (Test-Path $egressSrc)) {
 # tell the two writers apart. This object holds this translation unit alone. The sc7 literal is
 # required to be IN it, which is the known-answer control that the scan is reading real content and
 # not an empty or wrong file.
-$observerObj = Join-Path $build (Join-Path 'CMakeFiles/probe_replay.dir' ($observer + '.obj'))
+$observerObj = Join-Path $build (Join-Path 'CMakeFiles/EchoReplay.dir' ($observer + '.obj'))
 if (-not (Test-Path -LiteralPath $observerObj)) {
     Fail "no $observerObj, so nothing here can certify what file APIs the observer's own compiled code calls"
 } else {
@@ -481,16 +481,16 @@ if ($observerText -match $envToken) {
     Pass "the observer source names no $envToken* environment variable"
 }
 
-$probeDll = Join-Path $build 'bin/probe_replay.dll'
+$probeDll = Join-Path $build 'bin/EchoReplay.dll'
 if (-not (Test-Path -LiteralPath $probeDll)) {
-    Fail "probe_replay.dll is not at $probeDll, so nothing here can certify what environment names the observer BINARY reads"
+    Fail "EchoReplay.dll is not at $probeDll, so nothing here can certify what environment names the observer BINARY reads"
 } else {
     $dllBytes = [System.IO.File]::ReadAllBytes($probeDll)
     $dllText = [System.Text.Encoding]::GetEncoding(28591).GetString($dllBytes)
     $wideToken = ($envToken.ToCharArray() -join "`0")
-    if ($dllText.Contains($envToken)) { Fail "the built probe_replay.dll carries the literal $envToken, so something linked into it reads that environment name" }
-    elseif ($dllText.Contains($wideToken)) { Fail "the built probe_replay.dll carries the wide literal $envToken, so something linked into it reads that environment name" }
-    else { Pass "the built probe_replay.dll ($($dllBytes.Length) bytes) carries no $envToken literal, narrow or wide" }
+    if ($dllText.Contains($envToken)) { Fail "the built EchoReplay.dll carries the literal $envToken, so something linked into it reads that environment name" }
+    elseif ($dllText.Contains($wideToken)) { Fail "the built EchoReplay.dll carries the wide literal $envToken, so something linked into it reads that environment name" }
+    else { Pass "the built EchoReplay.dll ($($dllBytes.Length) bytes) carries no $envToken literal, narrow or wide" }
 }
 
 # The replacement has to actually be there, and it has to use the product's own directory
@@ -657,15 +657,15 @@ if (-not (Test-Path -LiteralPath $mkdemoSrc)) {
 # Test_replay links no product code, so the header helpers it proves are joined
 # to the probe by this file alone. Assert the join here, where the source IS the subject: the probe
 # must reach camera_control through the checked helpers and must never dereference the accessor.
-$probeText = Get-Content -Raw -LiteralPath (Join-Path $repo 'tests\replay\probe_replay.cpp')
+$probeText = Get-Content -Raw -LiteralPath (Join-Path $repo 'tests\replay\observer.cpp')
 $bareDerefs = [regex]::Matches($probeText, 'cc::Get\(\)\s*->')
 if ($bareDerefs.Count -ne 0) {
-    Fail ("probe_replay.cpp dereferences camera_control::Get() directly $($bareDerefs.Count) time(s). " +
+    Fail ("observer.cpp dereferences camera_control::Get() directly $($bareDerefs.Count) time(s). " +
           'That is the L3-RUN-28 access violation verbatim: Get() answers null the moment ' +
-          'camera_module unbinds. Read it through probe_replay::ReadObservedSelector, which makes ' +
+          'camera_module unbinds. Read it through observer::ReadObservedSelector, which makes ' +
           'null a named result')
 } else {
-    Pass 'probe_replay.cpp has no bare cc::Get()-> dereference'
+    Pass 'observer.cpp has no bare cc::Get()-> dereference'
 }
 foreach ($wiring in @(
         @{ pattern = 'ReadObservedSelector\(cc::Get\(\)'; what = 'the selector read-back re-asks for the rig' },
@@ -674,12 +674,12 @@ foreach ($wiring in @(
         @{ pattern = 'g_status\.workerJoined\s*='; what = 'Shutdown publishes whether the worker joined' })) {
     $hits = [regex]::Matches($probeText, $wiring.pattern)
     if ($hits.Count -lt 1) {
-        Fail ("probe_replay.cpp does not match /$($wiring.pattern)/, so " + $wiring.what +
+        Fail ("observer.cpp does not match /$($wiring.pattern)/, so " + $wiring.what +
               ' is not wired. The header-side unit tests pass either way -- unit-green cannot see wiring')
     } else {
         Pass ($wiring.what + " (wired, $($hits.Count) site(s))")
     }
 }
-Write-Host "GATE-RESULT checked=$checked subject=probe_replay-object-list-vs-echoreplay+staleness+export-pin+descriptor-denominator+carries-bootstrap+sc7-read-only+no-observer-env+launch-marker+answers-id-namespace+observer-object-writers+queue-copy-in-sync+cleanl5-fixtures+fixture-default-length+probe-camera-wiring"
+Write-Host "GATE-RESULT checked=$checked subject=EchoReplay-object-list-vs-echoreplay_core+staleness+export-pin+descriptor-denominator+carries-bootstrap+sc7-read-only+no-observer-env+launch-marker+answers-id-namespace+observer-object-writers+queue-copy-in-sync+cleanl5-fixtures+fixture-default-length+probe-camera-wiring"
 if ($failed) { exit 1 }
 exit 0

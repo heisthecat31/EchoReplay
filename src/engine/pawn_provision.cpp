@@ -392,7 +392,7 @@ unsigned g_markRequestsThisTick = 0;
 // identity_access.cpp -- each inside a __try that a first-chance VEH cannot see.  A logger with a
 // LIFETIME latch spends its one block on the first swallowed probe and then prints NOTHING for the
 // fault that kills the process, which is worse than silence: the block it did write names
-// echoreplay.dll and points the diagnosis at the wrong module.
+// EchoReplay.dll and points the diagnosis at the wrong module.
 //
 // So the latch is released after every block and the total is capped instead.  A swallowed probe
 // costs a numbered block; it can never cost the LAST one.  And the block that matters is written

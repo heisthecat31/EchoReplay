@@ -15,7 +15,7 @@ add_library(probe_rlay SHARED probe_rlay.cpp)
 set_target_properties(probe_rlay PROPERTIES OUTPUT_NAME rlay)
 target_link_libraries(probe_rlay PRIVATE replay_flags)
 
-add_dependencies(probe_host echoreplay probe_loader probe_rlay)
+add_dependencies(probe_host echoreplay_core probe_loader probe_rlay)
 
 # The in-game half. Same entry point and same bootstrap as the shipped DLL - the point is to watch the
 # real build guard ACCEPT, which no offline host can produce - plus one module that reports what it saw.

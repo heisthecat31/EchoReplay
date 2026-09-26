@@ -69,7 +69,7 @@ struct Pair {
     uint32_t hits;
 };
 
-// Readable() is itself a frame in probe_replay.dll, so one return address names the probe and not
+// Readable() is itself a frame in EchoReplay.dll, so one return address names the probe and not
 // the code that asked for it. Three name the site.
 struct Chain {
     uint16_t exportIdx;

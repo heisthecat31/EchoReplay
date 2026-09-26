@@ -17,7 +17,7 @@
 //   can reach us" into a list of the names that did. The log grep stays as a second, independent check
 //   the sweep runs from outside; this is the one that produces evidence rather than an absence.
 //
-// The probe is a test binary. None of this ships: echoreplay.dll installs no API hook.
+// The probe is a test binary. None of this ships: EchoReplay.dll installs no API hook.
 
 #include <windows.h>
 

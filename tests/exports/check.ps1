@@ -1,4 +1,4 @@
-# Pins echoreplay.dll's export table.
+# Pins echoreplay_core.dll's export table.
 #
 # The plugin must export exactly Update and RadPluginShutdown. The engine GetProcAddress-es provider
 # method names against our HMODULE uncached, every frame, so an export named Users or ProviderID makes us
@@ -19,7 +19,7 @@ if (-not $dumpbinLine) { Write-Host "no dumpbin= line in $toolchain"; exit 1 }
 $dumpbin = $dumpbinLine -replace '^dumpbin=', ''
 if (-not (Test-Path -LiteralPath $dumpbin)) { Write-Host "dumpbin not found: $dumpbin"; exit 1 }
 
-# ★ BOTH BINARIES, and the second is not a copy of the first's rule. probe_replay.dll is the product
+# ★ BOTH BINARIES, and the second is not a copy of the first's rule. EchoReplay.dll is the product
 # plus one observer translation unit; it carries the same provider-name hazard,
 # because the engine GetProcAddress-es method names against whichever of our modules is loaded, and it
 # is the only one loaded on a wave-2 launch. A pin that named echoreplay alone would leave the DLL
@@ -99,7 +99,7 @@ function Test-ExportSurface([string]$dllName) {
     return $true
 }
 
-$subjects = @('echoreplay.dll', 'probe_replay.dll')
+$subjects = @('echoreplay_core.dll', 'EchoReplay.dll')
 $clean = $true
 foreach ($name in $subjects) {
     if (-not (Test-ExportSurface $name)) { $clean = $false }

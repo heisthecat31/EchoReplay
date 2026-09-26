@@ -415,7 +415,7 @@ enum class RigProbe : uint8_t {
                           // and P-B kept its own superseded Refusal values in position for this.
     Ready,
     // Appended after Ready and never renumbered, for the reason tableguard.h gives on its own
-    // enum: probe_replay.cpp carries this value through a LONG and renders it back by name.
+    // enum: observer.cpp carries this value through a LONG and renders it back by name.
     TableSortPending,     // constructed, but CS.TABLE_FLAGS_OFF bit 0 is set, so the engine's lookup
                           // would sort the table IN PLACE on our tick (W1-C's TableWhy::SortPending)
 };

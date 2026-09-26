@@ -27,5 +27,5 @@ target_include_directories(replay_residue PUBLIC ${CMAKE_SOURCE_DIR}/src)
 # above, because a REPLAY_MODULE's registrar is a static object nothing references by name and an
 # archive member holding one is dropped by the linker as unused -- the module would silently never
 # run, which is the failure it exists to detect.
-target_sources(echoreplay PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/residue_module.cpp)
-target_link_libraries(echoreplay PRIVATE replay_residue)
+target_sources(echoreplay_core PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/residue_module.cpp)
+target_link_libraries(echoreplay_core PRIVATE replay_residue)

@@ -7,7 +7,7 @@
 #   probe_host.exe  ->  LoadLibrary(probe_loader.dll)
 #                           -> its DllMain scans <cwd>\plugins and LoadLibrarys every *.dll, discarding
 #                              the return value, exactly as dbgcore.dll does at WinMain statement 2
-#                                  -> echoreplay.dll's DllMain runs with the loader lock held
+#                                  -> echoreplay_core.dll's DllMain runs with the loader lock held
 #
 # What this proves, and what it cannot:
 #
@@ -71,7 +71,7 @@ function Fatal([string]$why) {
 $hostExe = Join-Path $bin 'probe_host.exe'
 $loaderDll = Join-Path $bin 'probe_loader.dll'
 $rlayDll = Join-Path $bin 'rlay.dll'
-$pluginDll = Join-Path $bin 'echoreplay.dll'
+$pluginDll = Join-Path $bin 'echoreplay_core.dll'
 foreach ($p in @($hostExe, $loaderDll, $rlayDll, $pluginDll)) {
     Assert "prerequisite exists: $(Split-Path -Leaf $p)" (Test-Path -LiteralPath $p) $p
 }
@@ -94,7 +94,7 @@ foreach ($scenario in $scenarios) {
     if (Test-Path -LiteralPath $stage) { Remove-Item -LiteralPath $stage -Recurse -Force }
     New-Item -ItemType Directory -Path (Join-Path $stage 'plugins') -Force | Out-Null
 
-    Copy-Item -LiteralPath $pluginDll -Destination (Join-Path $stage 'plugins\echoreplay.dll')
+    Copy-Item -LiteralPath $pluginDll -Destination (Join-Path $stage 'plugins\echoreplay_core.dll')
     if ($scenario.Rlay) { Copy-Item -LiteralPath $rlayDll -Destination (Join-Path $stage 'plugins\rlay.dll') }
 
     # Everything present before the run. Anything not in this set afterwards is residue, and S4.5.3 rule 5
@@ -149,7 +149,7 @@ foreach ($scenario in $scenarios) {
 
     Assert "${n}: the log records the CWD the plugins scan used" ($log -match [regex]::Escape("cwd=$stage"))
     Assert "${n}: the log records our own module path" `
-        ($log -match [regex]::Escape("plugins\echoreplay.dll"))
+        ($log -match [regex]::Escape("plugins\echoreplay_core.dll"))
 
     # Static self-registration happened during CRT init, before DllMain: a refused build still proves the
     # registry mechanism itself is alive.

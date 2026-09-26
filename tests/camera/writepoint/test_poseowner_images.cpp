@@ -1,7 +1,7 @@
 // W1-H. Ruling 4c's both-bound control, built as TWO IMAGES.
 //
 // The version this replaces linked both claimants into one test binary. That is a configuration the
-// product does not ship -- camera_control is in echoreplay.dll / probe_replay.dll and
+// product does not ship -- camera_control is in EchoReplay.dll / EchoReplay.dll and
 // camera::Create's only caller is probe_camera.dll -- so with the arbiter's state held in a
 // per-image static, the shipping arrangement had TWO arbiters, both claimants bound, and both
 // printed `conflicts 0`. The single-binary test could not fail on that, because in one binary there
@@ -357,7 +357,7 @@ TEST_CASE("a transfer is keyed on the holding image, and one arbiter counts it f
     CHECK(ctl.HeldOwner() == PoseOwner::StockFreeCam);
 
     // ARCH-17 S3.3(b) moves the pose from the stock free camera to the write point. In the shipping
-    // arrangement both claimants are compiled into echoreplay.dll, so that transfer is one image
+    // arrangement both claimants are compiled into EchoReplay.dll, so that transfer is one image
     // moving its own token. Asked from a DIFFERENT image it must be REFUSED for the reason an
     // unkeyed release was: probe_camera.dll carries its own copy of the write point, and a transfer
     // that only checked the owner would let it take a pose it never claimed.

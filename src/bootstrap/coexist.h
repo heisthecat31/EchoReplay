@@ -21,6 +21,7 @@ namespace coexist {
 struct Report {
     bool     ourNameIsTheLoaderSlot;   // we were renamed to dbgcore.dll: refuse
     bool     duplicateInstance;        // a second copy of this plugin is already attached
+    bool     legacyCopyBesideUs;       // the pre-rename probe_replay.dll is in our folder too
     bool     rlayLoaded;
     unsigned pluginDllCount;           // files in our own directory whose name contains ".dll"
     unsigned otherPluginDlls;          // ... not counting ourselves

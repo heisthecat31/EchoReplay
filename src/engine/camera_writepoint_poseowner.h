@@ -27,8 +27,8 @@
 //
 // ★ WHY THIS IS NOT A STATIC. The first version kept the state in
 // an inline function's local static, which is exactly one instance PER LINKED IMAGE -- and the two
-// claimants are not in one image. camera_control is compiled into echoreplay.dll and
-// probe_replay.dll; camera::Create's only caller is probe_camera.dll, its own SHARED library. At L3
+// claimants are not in one image. camera_control is compiled into EchoReplay.dll and
+// EchoReplay.dll; camera::Create's only caller is probe_camera.dll, its own SHARED library. At L3
 // and L5 each would claim a DIFFERENT arbiter, both would bind, and both would print `conflicts 0`
 // while the fallback's first write disabled the primary. The state therefore lives in a pagefile-
 // backed section named per PROCESS, which every image maps: one PoseOwnerState per process, one
@@ -309,7 +309,7 @@ inline void ReleasePoseOwner(PoseOwner claimant) {
 //
 // Keyed on the holding IMAGE for the same reason ReleasePoseOwner is: `from` must be held by the
 // image asking, or any image could take a token it never claimed. In the shipping arrangement both
-// claimants are compiled into echoreplay.dll, so the key matches by construction; a transfer
+// claimants are compiled into EchoReplay.dll, so the key matches by construction; a transfer
 // against a token probe_camera.dll holds is refused and names the holder.
 //
 // A transfer is not a None->owner transition, so it does NOT move `epoch`: two images comparing

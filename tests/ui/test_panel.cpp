@@ -347,7 +347,7 @@ struct Fixture {
     Fixture() {
         // Points paths:: at the scratch tree, so ReplayDirectory() and the log land there rather
         // than anywhere near a real install.
-        const std::wstring self = dir.File(L"plugins\\echoreplay.dll");
+        const std::wstring self = dir.File(L"plugins\\EchoReplay.dll");
         ::CreateDirectoryW(dir.File(L"plugins").c_str(), nullptr);
         SetPathsForTest(self.c_str());
         ::CreateDirectoryW(captureDir.c_str(), nullptr);

@@ -820,7 +820,7 @@ TEST_CASE("a -offline the engine will ignore is not a credible hint") {
 
 TEST_CASE("the late rlay re-check can arm a session the first look left unguarded") {
     // ★★★ The sequence this pins is the COMMON one, not an edge case. Plugins load alphabetically, so
-    // echoreplay.dll is reached before rlay.dll: the first look finds no rlay, disbelieves a -offline
+    // EchoReplay.dll is reached before rlay.dll: the first look finds no rlay, disbelieves a -offline
     // that is in fact credible, and records live-online-capture. If that decision were final the
     // session would run unguarded, which is the fail-open direction on the one guard that matters.
     //

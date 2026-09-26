@@ -28,6 +28,6 @@ replay_add_test(NAME control
     LIBS replay_bootstrap replay_control_core replay_camera_writepoint)
 
 # P17-E's S9 case reads src/control/dispatch.cpp and src/ui/panel.cpp out of the tree: the arms
-# themselves are on the echoreplay target and cannot be linked here, so the wiring is asserted from
+# themselves are on the echoreplay_core target and cannot be linked here, so the wiring is asserted from
 # the source. Same mechanism tests/camera and tests/replay already use.
 target_compile_definitions(test_control PRIVATE REPLAY_REPO_ROOT="${CMAKE_SOURCE_DIR}")

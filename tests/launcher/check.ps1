@@ -26,12 +26,12 @@ foreach ($d in $captures, $empty, "$game\bin\win10\plugins", "$noPlugin\bin\win1
 }
 Set-Content "$game\bin\win10\echovr.exe" 'not a game'
 Set-Content "$game\bin\win10\dbgcore.dll" 'not a loader'
-Set-Content "$game\bin\win10\plugins\probe_replay.dll" 'not a plugin'
+Set-Content "$game\bin\win10\plugins\EchoReplay.dll" 'not a plugin'
 Set-Content "$noPlugin\bin\win10\echovr.exe" 'not a game'
 Set-Content "$noPlugin\bin\win10\dbgcore.dll" 'not a loader'
 Set-Content "$noLoader\bin\win10\echovr.exe" 'not a game'
-Set-Content "$noLoader\bin\win10\plugins\probe_replay.dll" 'not a plugin'
-Set-Content "$noExe\bin\win10\plugins\probe_replay.dll" 'not a plugin'
+Set-Content "$noLoader\bin\win10\plugins\EchoReplay.dll" 'not a plugin'
+Set-Content "$noExe\bin\win10\plugins\EchoReplay.dll" 'not a plugin'
 
 # Oldest to newest: arena, an unknown level, combat (dyson).
 $arena = '2026-01-01_10-00-00_576ED3F8428EBC4B_000000007E1CAF73.echodemo'
@@ -127,6 +127,29 @@ $r = Run @('-CaptureDir', $captures, '-ImportDir', $empty, '-GameDir', $noLoader
 Check 'a game without EchoLoader is refused' ($r.Exit -eq 1 -and $r.Text.Contains('EchoLoader is not installed'))
 $r = Run @('-CaptureDir', $captures, '-ImportDir', $empty, '-GameDir', $noPlugin, '-GameProcessName', $nobody, '-DryRun', '-Latest')
 Check 'a missing plugin is a warning, not a copy and not a refusal' ($r.Exit -eq 0 -and $r.Text.Contains('WARNING: the replay plugin is not installed') -and -not (Test-Path "$noPlugin\bin\win10\plugins"))
+
+Write-Host 'old plugin name'
+$legacyGame = Join-Path $root 'game_legacy'
+$legacyOnly = Join-Path $root 'game_legacy_only'
+foreach ($g in $legacyGame, $legacyOnly) {
+    New-Item -ItemType Directory -Force "$g\bin\win10\plugins" | Out-Null
+    Set-Content "$g\bin\win10\echovr.exe" 'not a game'
+    Set-Content "$g\bin\win10\dbgcore.dll" 'not a loader'
+    Set-Content "$g\bin\win10\plugins\probe_replay.dll" 'old plugin'
+}
+Set-Content "$legacyGame\bin\win10\plugins\EchoReplay.dll" 'not a plugin'
+$legacy = "$legacyGame\bin\win10\plugins\probe_replay.dll"
+$disabled = "$legacyGame\bin\win10\plugins_disabled\probe_replay.dll"
+
+$r = Run @('-CaptureDir', $captures, '-ImportDir', $empty, '-GameDir', $legacyOnly, '-GameProcessName', $nobody, '-DryRun', '-Latest')
+Check 'an old plugin alone is a warning and is left in place' ($r.Exit -eq 0 -and $r.Text.Contains('earlier version of this plugin under its old name') -and (Test-Path "$legacyOnly\bin\win10\plugins\probe_replay.dll"))
+$r = Run @('-CaptureDir', $captures, '-ImportDir', $empty, '-GameDir', $legacyGame, '-GameProcessName', $nobody, '-DryRun', '-Latest')
+Check 'a dry run only says it would move the old plugin' ($r.Exit -eq 0 -and $r.Text.Contains('would be moved') -and (Test-Path $legacy) -and -not (Test-Path $disabled))
+# Not a dry run: the move happens before the launch, and the launch of this text-file echovr.exe fails.
+$ErrorActionPreference = 'Continue'   # the failed launch writes to stderr
+$r = Run @('-CaptureDir', $captures, '-ImportDir', $empty, '-GameDir', $legacyGame, '-GameProcessName', $nobody, '-Latest')
+$ErrorActionPreference = 'Stop'
+Check 'beside EchoReplay.dll the old plugin is moved out of plugins' ($r.Text.Contains('Moved the old plugin') -and -not (Test-Path $legacy) -and (Test-Path $disabled) -and (Test-Path "$legacyGame\bin\win10\plugins\EchoReplay.dll"))
 
 Write-Host 'source'
 $source = Get-Content -Raw $Script

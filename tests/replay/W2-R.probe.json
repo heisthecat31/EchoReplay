@@ -5,7 +5,7 @@
       "windowSec": 180,
       "attended": false,
       "owner": "W2-R",
-      "dll": "build/bin/probe_replay.dll",
+      "dll": "build/bin/EchoReplay.dll",
       "profile": "replay-local-bare",
       "completesAt": "match",
       "timeoutSec": 240,
@@ -48,14 +48,14 @@
         "done.json",
         "sc7_text_diff.json"
       ],
-      "scope": "EVERY CLAIM FROM THIS LAUNCH IS A CLAIM ABOUT probe_replay.dll, NOT ABOUT echoreplay.dll. The two binaries are compiled from the same sources - tests/replay/check.ps1 asserts that against CMake's own manifest, both directions - and they differ by one translation unit, an output name and nothing else that has ever been measured. That is strictly stronger than wave 1's per-subsystem probes and strictly weaker than launching the shipped DLL, and the launch that runs echoreplay.dll itself remains owed. The observer WATCHES: it re-implements no product path, so a green here is a statement about the shipped code, and a red here is a defect in it.",
-      "why": "The cheapest launch that executes src/ui/csregister.cpp in the shipped path, on the least-proven precondition in the wave. The BROWSER arm is selected by ECHOREPLAY_OPEN naming a DIRECTORY, which replay-local-bare's Env block supplies; an empty value is refused by the module rather than being read as a third meaning. exclusive is true and it is not a formality: probe_replay carries src/bootstrap/bootstrap.cpp and src/engine/tick.cpp, so a second bootstrap-carrying plugin in the same install loses the instance claim, installs nothing and files nothing - the observer reports what it found beside it in the record's coexist field so that outcome is on disk rather than inferred from a silence."
+      "scope": "EVERY CLAIM FROM THIS LAUNCH IS A CLAIM ABOUT EchoReplay.dll, NOT ABOUT echoreplay_core.dll. The two binaries are compiled from the same sources - tests/replay/check.ps1 asserts that against CMake's own manifest, both directions - and they differ by one translation unit, an output name and nothing else that has ever been measured. That is strictly stronger than wave 1's per-subsystem probes and strictly weaker than launching the shipped DLL, and the launch that runs echoreplay_core.dll itself remains owed. The observer WATCHES: it re-implements no product path, so a green here is a statement about the shipped code, and a red here is a defect in it.",
+      "why": "The cheapest launch that executes src/ui/csregister.cpp in the shipped path, on the least-proven precondition in the wave. The BROWSER arm is selected by ECHOREPLAY_OPEN naming a DIRECTORY, which replay-local-bare's Env block supplies; an empty value is refused by the module rather than being read as a third meaning. exclusive is true and it is not a formality: EchoReplay carries src/bootstrap/bootstrap.cpp and src/engine/tick.cpp, so a second bootstrap-carrying plugin in the same install loses the instance claim, installs nothing and files nothing - the observer reports what it found beside it in the record's coexist field so that outcome is on disk rather than inferred from a silence."
     },
     {
       "id": "W2-R-capture",
       "attended": false,
       "owner": "W2-R",
-      "dll": "build/bin/probe_replay.dll",
+      "dll": "build/bin/EchoReplay.dll",
       "profile": "capture-local",
       "completesAt": "match",
       "timeoutSec": 300,
@@ -90,14 +90,14 @@
         "done.json",
         "sc7_text_diff.json"
       ],
-      "scope": "As above: a claim about probe_replay.dll. Additionally, this launch produces F-REAL, and the capture is the product's own writer running in the product's own code path - the observer does not write a capture and does not touch the transport.",
+      "scope": "As above: a claim about EchoReplay.dll. Additionally, this launch produces F-REAL, and the capture is the product's own writer running in the product's own code path - the observer does not write a capture and does not touch the transport.",
       "why": "The first launch in this project's history to run the shipped module set, and the only wave-2 launch that writes a capture. It answers whether the product survives a real session and it produces the file L4 and LF are about."
     },
     {
       "id": "W2-R-playback-synth",
       "attended": false,
       "owner": "W2-R",
-      "dll": "build/bin/probe_replay.dll",
+      "dll": "build/bin/EchoReplay.dll",
       "profile": "replay-local",
       "completesAt": "match",
       "timeoutSec": 300,
@@ -212,14 +212,14 @@
         "done.json",
         "sc7_text_diff.json"
       ],
-      "scope": "A claim about probe_replay.dll, on F-SYNTH. F-SYNTH is a constructed file: a read that answers here answers about the product's handling of a file built to the format's rules, not about a capture of a real match. That is what the L4 differential is for, and a read that answers differently on the two is a capture-fidelity finding.",
+      "scope": "A claim about EchoReplay.dll, on F-SYNTH. F-SYNTH is a constructed file: a read that answers here answers about the product's handling of a file built to the format's rules, not about a capture of a real match. That is what the L4 differential is for, and a read that answers differently on the two is a capture-fidelity finding.",
       "why": "The playback battery on the synthetic fixture, independent of whether L2 succeeded, because F-SYNTH is on disk before the launch. ECHOREPLAY_OPEN names a FILE, which selects the PLAYBACK arm."
     },
     {
       "id": "W2-R-playback-real",
       "attended": false,
       "owner": "W2-R",
-      "dll": "build/bin/probe_replay.dll",
+      "dll": "build/bin/EchoReplay.dll",
       "profile": "replay-local",
       "completesAt": "match",
       "timeoutSec": 300,
@@ -334,14 +334,14 @@
         "done.json",
         "sc7_text_diff.json"
       ],
-      "scope": "A claim about probe_replay.dll, on F-REAL. It is the milestone launch, and it is only interpretable beside L3: the same battery, the same binary, a different file.",
+      "scope": "A claim about EchoReplay.dll, on F-REAL. It is the milestone launch, and it is only interpretable beside L3: the same battery, the same binary, a different file.",
       "why": "The real capture L2 produced, played in a real game, read differentially against L3."
     },
     {
       "id": "W2-R-playback-idle",
       "attended": true,
       "owner": "W2-R",
-      "dll": "build/bin/probe_replay.dll",
+      "dll": "build/bin/EchoReplay.dll",
       "profile": "replay-local",
       "completesAt": "match",
       "timeoutSec": 300,
@@ -398,7 +398,7 @@
         "done.json",
         "sc7_text_diff.json"
       ],
-      "scope": "A claim about probe_replay.dll, on F-REAL. It is the milestone launch, and it is only interpretable beside L3: the same battery, the same binary, a different file. PLAYBACK-IDLE additionally samples nothing a human's seeking would perturb and never drives the transport itself, so its rows are the subset of the playback battery that needs no command: the 4b pause proof and the 0.5x audio slope are NOT in its list, because asking them would mean driving the transport out from under the person watching.",
+      "scope": "A claim about EchoReplay.dll, on F-REAL. It is the milestone launch, and it is only interpretable beside L3: the same battery, the same binary, a different file. PLAYBACK-IDLE additionally samples nothing a human's seeking would perturb and never drives the transport itself, so its rows are the subset of the playback battery that needs no command: the 4b pause proof and the 0.5x audio slope are NOT in its list, because asking them would mean driving the transport out from under the person watching.",
       "why": "The fidelity arm (15.5). The arm is selected by the DESCRIPTOR's probe id ending in -idle, not by a machine-wide variable and not by the file: nothing carries `attended` to the module, and keying on the id the harness already hands us in REPLAY_PROBE_IDS keeps the arm a property of this launch's row (RK-11)."
     }
   ]

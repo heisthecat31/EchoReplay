@@ -8,7 +8,7 @@
 //
 // A no-op is the CORRECT body here rather than a convenience: a DLL that cannot reach
 // InstallCrashLogger has no handler in the chain to remove. It is not a weakening of the wiring for
-// echoreplay.dll, which carries pawn_provision.cpp and therefore its real RemoveCrashLogger -- and if
+// EchoReplay.dll, which carries pawn_provision.cpp and therefore its real RemoveCrashLogger -- and if
 // this file were ever linked into that DLL the result would be LNK2005, a loud duplicate symbol, not a
 // quiet shadow of the real one.
 //

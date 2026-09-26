@@ -6,7 +6,7 @@
 // READER: it parses lines the product wrote and reads counters the product keeps, and it computes
 // nothing the product computes.
 //
-// It is a header of pure functions on purpose. probe_replay.cpp fills LogFacts from the real log
+// It is a header of pure functions on purpose. observer.cpp fills LogFacts from the real log
 // file and StatusFacts from the real accessors; tests/replay/test_observer.cpp fills both by hand.
 // That is the only way a battery whose inputs only exist inside a running game can be proved to
 // discriminate its outcomes before the launch that would use it.
@@ -40,7 +40,7 @@
 #include "capture/capturestop.h"
 #include "engine/camera_writepoint.h"
 
-namespace probe_replay {
+namespace observer {
 
 inline constexpr size_t kRowLineCap = 400; // facts-ok: AUDIO.LISTENER_COUNT_OFF a text-buffer length, not that offset
 
@@ -608,7 +608,7 @@ struct LogFacts {
     char audioBindRefusal[240] = {0};
     bool soundPlayerResolved = false;
     char soundPlayerLine[240] = {0};
-    // The file the session loaded, as [ui] named it. probe_replay.cpp opens it a second time
+    // The file the session loaded, as [ui] named it. observer.cpp opens it a second time
     // through the product's own DemoReader; this is the only place its name is carried.
     char uiLoadedPath[kRowLineCap] = {0};
 
@@ -1911,7 +1911,7 @@ struct StatusFacts {
     bool audioAvailable = false;
     char audioDiagnostic[256] = {0};
     // ---- W2-A's two streams, read back on the playback arm (L3-RUN-7 F3) ----------------------
-    // Filled by probe_replay.cpp, which links the PRODUCT's replay::DemoReader and walks the
+    // Filled by observer.cpp, which links the PRODUCT's replay::DemoReader and walks the
     // streams with it. Nothing in this header knows the format: even the width of the gamestate
     // present mask arrives as `gsPresentAll`, which the probe copies from kGameStatePresentAll,
     // so a checker with its own idea of the format cannot certify a file the loader would refuse.
@@ -2168,7 +2168,7 @@ struct StatusFacts {
 // ★ ARCH-20 S5's twenty fields, csregister::Report -> StatusFacts, one assignment each.
 //
 // A template because this header pulls in no product code (tests/replay/CMakeLists.txt states that
-// as the reason test_replay links nothing), while `probe_replay.cpp` instantiates it on the real
+// as the reason test_replay links nothing), while `observer.cpp` instantiates it on the real
 // `replay::ui::csregister::Report`: a Report that is missing or has retyped any field below fails
 // to COMPILE there rather than letting the record carry a zero nobody measured. The test drives the
 // same shipped code with a Report double that holds a distinct value in every field -- which is the
@@ -2374,7 +2374,7 @@ inline const char* StepSpreadReason(long long spread) {
 // L3-RUN-7 F3. `PLAYERSTATS 114 record(s), 1 user(s)` and a near-clean S_GAMESTATE have been on
 // disk since `04706fc` and no row on the playback arm asked about either. These two do.
 //
-// Both read what the PRODUCT's reader decoded: probe_replay.cpp opens the file the session loaded
+// Both read what the PRODUCT's reader decoded: observer.cpp opens the file the session loaded
 // with replay::DemoReader -- linked into the same binary -- and walks kStreamGameState and
 // kStreamPlayerStats with the product's own record structs, the product's own present/fill masks
 // and, for the monotone rule, the product's own PlayerStatsNoteTime. This header holds no constant
@@ -3673,7 +3673,7 @@ inline Ask AskBrowserOverLevel(const StatusFacts& s, const LogFacts& f, char* d,
 // takes all four baselines at the LATER of the two stamps, and never subtracts one epoch's sample
 // from another's (ARCH-15 S4.3).
 // ★ THE SPLIT, COPIED THE WAY CopyGuiGateFacts COPIES ITS TWENTY: a template, so this header pulls
-// in no product code, while probe_replay.cpp instantiates it on the real csregister::Report and a
+// in no product code, while observer.cpp instantiates it on the real csregister::Report and a
 // field that was renamed or retyped fails to COMPILE there instead of publishing a zero nobody
 // measured. The test drives it with a Report double holding a distinct value in every field, which
 // is the only fixture on which a swapped or a dropped assignment can fail.
@@ -4184,7 +4184,7 @@ inline Ask AskCaptureStopSentinel(const StatusFacts& s, const LogFacts& f, char*
 // ---------------------------------------------------------------------------------------------
 // THE LAUNCH MARKER'S TEXT.
 //
-// The file IO and the directory resolution live in probe_replay.cpp, which reuses the capture
+// The file IO and the directory resolution live in observer.cpp, which reuses the capture
 // module's own (the current directory, then StateDir()). What is here is the part that can be
 // driven without a game -- and the malformed cases are the whole reason it is separated, because a
 // parser nothing can exercise is a parser whose default IS its answer.
@@ -7162,7 +7162,7 @@ inline bool EvaluateRow(const char* id, const LogFacts& f, const StatusFacts& s,
 // say so. This is the reader that ends that.
 //
 // It stays a READER: every field is copied out of
-// replay::egress's own published accessors by probe_replay.cpp. The state WORD is the product's
+// replay::egress's own published accessors by observer.cpp. The state WORD is the product's
 // -- ArmStateName's string, verbatim -- and is never spelled here, never derived from the counts,
 // and never taken from the legacy `armed` boolean, which cannot express PartiallyArmed and would
 // read a half-armed blocker as fully armed.
@@ -7773,4 +7773,4 @@ inline bool AppendCsRegisterObject(char* out, size_t cap, const StatusFacts& s) 
     return false;
 }
 
-}  // namespace probe_replay
+}  // namespace observer

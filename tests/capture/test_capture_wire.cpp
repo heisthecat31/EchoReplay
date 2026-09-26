@@ -2256,7 +2256,7 @@ TEST_CASE("the watch list is bounded and reset, and a close nobody could evidenc
     ::CreateDirectoryW(watch.c_str(), nullptr);
     ::CreateDirectoryW(root.c_str(), nullptr);
     ::CreateDirectoryW(state.c_str(), nullptr);
-    replay::SetPathsForTest((root + L"\\plugins\\echoreplay.dll").c_str());
+    replay::SetPathsForTest((root + L"\\plugins\\EchoReplay.dll").c_str());
     REQUIRE(replay::Resolved());
     REQUIRE(std::wstring(replay::StateDir()) == state);
     REQUIRE(::SetCurrentDirectoryW(watch.c_str()) != 0);
