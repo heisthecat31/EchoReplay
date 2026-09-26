@@ -1,0 +1,5 @@
+{
+  "clause": 4,
+  "verdict": "not-clean",
+  "why": "the row's status is outside Running|MarshalStale|CallbackSilent. A status the clause does not name is not a status it accepts."
+}

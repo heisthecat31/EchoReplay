@@ -1,0 +1,16 @@
+build/
+*.echodemo
+*.log
+_scratch/
+__pycache__/
+*.pyc
+build-*/
+out/
+.vs/
+.vscode/
+CMakeUserPresets.json
+scratchpad/
+*.echoreplay
+*.tape
+!tests/import/data/sample.echoreplay
+!tests/import/data/sample.tape

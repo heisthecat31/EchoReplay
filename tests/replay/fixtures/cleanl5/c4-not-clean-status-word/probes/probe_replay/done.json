@@ -1,0 +1,33 @@
+{
+  "probe": "probe_replay",
+  "verdict": "pass",
+  "provisional": false,
+  "batteryRan": true,
+  "levelLoadAtMs": 12000,
+  "ownerDraws": 6350,
+  "ownerDrawsAtLevel": 100,
+  "rows": [
+    {
+      "id": "w1j-launch-window-declared",
+      "state": "asked-pass",
+      "declaration": true
+    },
+    {
+      "id": "w1c-sc7-text-diff",
+      "state": "asked-pass",
+      "declaration": false
+    },
+    {
+      "id": "w2r-panel-drawn-over-level",
+      "state": "asked-pass",
+      "declaration": false
+    },
+    {
+      "id": "w2f-csregister-epoch",
+      "state": "asked-pass",
+      "declaration": false,
+      "status": "WrongThread",
+      "staleDetected": 0
+    }
+  ]
+}

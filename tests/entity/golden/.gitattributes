@@ -1,0 +1,4 @@
+# The golden is compared byte for byte, LF, by entity_wiretest and read by W2-R's parser test.
+# core.autocrlf is true in this repo; without this, checkout would rewrite it to CRLF and both
+# readers would see a trailing CR on every line.
+* -text

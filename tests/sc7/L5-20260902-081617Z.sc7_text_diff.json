@@ -1,0 +1,51 @@
+{
+  "writer": "sc7-p12",
+  "pass": "late-tick",
+  "verdict": "PASS",
+  "reason": "live .text matches the on-disk image except for the 2 declared ledger row(s); 12 range(s) attributed to rlay (loaded); some row(s) could not be asked and were not scored",
+  "declared_rows": ["2.3", "2.4"],
+  "deferred_rows": [
+    { "row": "1", "key": "tick.mode", "reason": "tick-mode-not-yet-published" }
+  ],
+  "expected_rows": ["2.3", "2.4"],
+  "observed_rows": ["2.4", "2.3"],
+  "detail": [
+    { "rva": "0x1042B0", "row": "2.4", "fact": "OFFLINELOCK.TEARDOWN", "len": 5, "bytes": "e9 1f cd ee ff" },
+    { "rva": "0xD376D0", "row": "2.3", "fact": "VOIP.RECEIVE", "len": 5, "bytes": "e9 be 98 2b ff" }
+  ],
+  "unattributed": [
+    { "rva": "0xEAEF0", "len": 7, "expected": "48 81 ec a8 00 00 00", "actual": "e9 63 54 ff bf cc cc", "owner": "rlay" },
+    { "rva": "0xFDE0F", "len": 4, "expected": "5d fc ff ff", "actual": "cd 02 00 00", "owner": "rlay" },
+    { "rva": "0xFEA00", "len": 5, "expected": "48 89 5c 24 08", "actual": "e9 73 17 fe bf", "owner": "rlay" },
+    { "rva": "0x116720", "len": 8, "expected": "40 55 57 48 8d 6c 24 b1", "actual": "e9 b3 9a fc bf cc cc cc", "owner": "rlay" },
+    { "rva": "0x11690D", "len": 1, "expected": "75", "actual": "eb", "owner": "rlay" },
+    { "rva": "0x179EB0", "len": 5, "expected": "48 89 5c 24 08", "actual": "e9 e3 63 f6 bf", "owner": "rlay" },
+    { "rva": "0x17F0B1", "len": 1, "expected": "74", "actual": "75", "owner": "rlay" },
+    { "rva": "0x1AC83E", "len": 3, "expected": "0f 85 91", "actual": "e9 92 00", "owner": "rlay" },
+    { "rva": "0x1B8650", "len": 5, "expected": "40 55 57 41 57", "actual": "e9 e3 7b f2 bf", "owner": "rlay" },
+    { "rva": "0x1F60C0", "len": 5, "expected": "48 89 5c 24 08", "actual": "e9 33 a2 ee bf", "owner": "rlay" },
+    { "rva": "0x5105F0", "len": 5, "expected": "48 89 5c 24 08", "actual": "e9 c3 fd bc bf", "owner": "rlay" },
+    { "rva": "0xA7C686", "len": 2, "expected": "26 18", "actual": "d6 17", "owner": "rlay" }
+  ],
+  "third_party": [
+    { "name": "rlay", "present": true, "table_read": true, "declared": 25, "observed": 12, "provenance": "25 span(s) read from C:\Program Files\Oculus\Software\Software\ready-at-dawn-echo-arena\bin\win10\plugins\rlay.dll's own patch-install code", "unmatched": [] }
+  ],
+  "passes": [
+    { "pass": "post-init", "verdict": "PASS", "reason": "live .text matches the on-disk image except for the 2 declared ledger row(s); 12 range(s) attributed to rlay (loaded); some row(s) could not be asked and were not scored" },
+    { "pass": "late-tick", "verdict": "PASS", "reason": "live .text matches the on-disk image except for the 2 declared ledger row(s); 12 range(s) attributed to rlay (loaded); some row(s) could not be asked and were not scored" }
+  ],
+  "unattributed_total": 12,
+  "unowned_total": 0,
+  "attributed_ranges": 12,
+  "declared_sites": 2,
+  "armed_ledger_sites": 2,
+  "window_blind_bytes": 10,
+  "probe_dir_fallback": "",
+  "reloc_bytes_skipped": 0,
+  "reloc_fields_in_text": 0,
+  "reloc_delta": 0,
+  "text_rva": "0x1000",
+  "text_bytes": 23859655,
+  "disk_md5": "caa05ee3bca2f5df0809994e93e2cc05",
+  "elapsed_us": 14644
+}

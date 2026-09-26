@@ -1,0 +1,21 @@
+# The export surface of echoreplay.dll, pinned. Design section 2 F8b, bolded in the original:
+#
+#     "Design: export exactly Update and RadPluginShutdown. Export nothing else."
+#
+# Why it is a correctness rule and not tidiness: the engine GetProcAddress-es provider method names against
+# our HMODULE, uncached, every frame. section 2 F8b: exporting a silent no-op for one of them "would be WORSE than
+# not exporting them - a no-op returning 0 is indistinguishable from a valid provider id, and would make us
+# a plausible provider to any caller". Missing methods are tolerated; the engine just logs
+# "Method '%s' is unimplemented for net service provider '%s'", and W1-D's canary greps for that line.
+#
+# section 13.3 originally specified WINDOWS_EXPORT_ALL_SYMBOLS ON, which contradicts the above by exporting every
+# non-static free function. Orchestrator ruling 2026-08-27: F8b wins. The flag is off; a symbol leaves this
+# DLL only if someone marks it.
+#
+# Only names that MAY appear. The forbidden set is not here: it is read out of the design
+# by check.ps1, because a deny-list kept beside the check is one the check's author can quietly shorten.
+#
+# May appear. W1-D adds these two when the slot claim lands; until then the DLL exports nothing
+# and that is correct, not a gap.
+Update
+RadPluginShutdown

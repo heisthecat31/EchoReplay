@@ -1,0 +1,5 @@
+{
+  "clause": 1,
+  "verdict": "not-clean",
+  "why": "the harness did not kill it on probes-complete: the process exited on its own, which is a present definite negative and outranks anything absent (rule 5 amendment (a))."
+}

@@ -1,0 +1,5 @@
+{
+  "clause": 0,
+  "verdict": "clean",
+  "why": "every clause affirmative, and the two observation rows carry declaration=false -- the W1J15-1 discriminator's clean side: the FLAG's value decides, not its presence."
+}

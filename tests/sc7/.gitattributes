@@ -1,0 +1,8 @@
+# Recorded artifacts are evidence, not text.
+#
+# AUDIT_L5FIX W1C-1: `core.autocrlf` is true on this machine, so a committed launch artifact with no
+# attribute here is converted to CRLF on checkout. `L5-20260902-081617Z.sc7_text_diff.json` is the
+# 3160-byte document L5 actually wrote; checked out as CRLF it becomes 3211 bytes and is no longer the
+# file whose bytes this directory's check is about, so the check passed only in the tree that wrote it.
+# A fixture that differs from the artifact it copies cannot prove anything about it.
+*.sc7_text_diff.json -text

@@ -1,0 +1,35 @@
+# ARCH-12 4.3 GOLDEN -- the cs-space-candidates line, byte for byte, one line per arm.
+#
+# W1-E emits this grammar and W2-R parses it; ARCH-12 4.3 froze them as a pair, and until
+# this file existed each side carried its own private spelling, so a one-character label
+# change reddened one suite and left the other green (AUDIT_F3H F3H-7). This file is WRITTEN
+# AND COMPARED by tests/entity/test_entity_module.cpp from the shipping emitter's own output,
+# and READ read-only by W2-R's parser test. Either side moving now reddens both.
+#
+# CONTRACT: one arm per line, `<arm-name> <TAB> <emitted line>`; LF line endings; ASCII
+# only; no trailing spaces; a `#` in column 1 is a comment; no blank lines. The payload is
+# the emitter's own bytes -- the logger's `[entity] ` module prefix is NOT part of it.
+#
+# Addresses are not reproducible run to run, so the fixture's own objects render as the
+# fixed stand-ins below and EVERY OTHER BYTE is exactly what src/engine/entity_module.cpp
+# wrote. The substitution matches the exact rendered string, so a change of width, case or
+# padding does not substitute: the raw address lands in the comparand and the compare fails.
+#
+#   00000000E6000000  the netGame            00000000E62B0800  the space at +0x2B08
+#   e62b0840/e62b0880 its block/allocator    00000000E62B1000  the space at +0x2B10
+#   e62b1040/e62b1080 its block/allocator    00000000E68A4800  the CR15Game at +0x8
+#
+# 0000600DBADBAD00 is NOT a stand-in: it is the fixture's unmapped probe address, verbatim.
+#
+# To regenerate after an INTENDED emitter change, from the build directory:
+#   REPLAY_UPDATE_GOLDEN=1 bin/entity_wiretest.exe -tc="*committed golden*"
+# The case prints every changed line, rewrites this file, re-reads it from disk and compares
+# again. Commit the regenerated file in the SAME commit as the emitter change.
+ready-2b08-only	cs-space candidates: ng=00000000E6000000 | +0x8=0000600DBADBAD00 Unreadable/HeaderUnreadable base=0 bytes=0 alloc=0 grow=0 cap=0 count=0 flags=0 | +0x2B08=00000000E62B0800 Ready/Ready base=e62b0840 bytes=64 alloc=e62b0880 grow=4 cap=4 count=1 flags=0 | +0x2B10=null | game+0x7AF0=unreadable | game+0x7AF8=unreadable | spawnsym=unreadable | levelsym=null
+null-cr15game	cs-space candidates: ng=00000000E6000000 | +0x8=null | +0x2B08=00000000E62B0800 Ready/Ready base=e62b0840 bytes=64 alloc=e62b0880 grow=4 cap=4 count=1 flags=0 | +0x2B10=null | game+0x7AF0=null | game+0x7AF8=null | spawnsym=null | levelsym=null
+unreadable-netgame	cs-space candidates: ng=0000600DBADBAD00 | +0x8=unreadable | +0x2B08=unreadable | +0x2B10=unreadable | game+0x7AF0=unreadable | game+0x7AF8=unreadable | spawnsym=unreadable | levelsym=unreadable
+both-spaces-symbols-agree	cs-space candidates: ng=00000000E6000000 | +0x8=00000000E68A4800 Empty/Empty base=0 bytes=0 alloc=0 grow=0 cap=0 count=0 flags=0 | +0x2B08=00000000E62B0800 Ready/Ready base=e62b0840 bytes=64 alloc=e62b0880 grow=4 cap=4 count=1 flags=0 | +0x2B10=00000000E62B1000 Ready/Ready base=e62b1040 bytes=64 alloc=e62b1080 grow=4 cap=4 count=3 flags=0 | game+0x7AF0=null | game+0x7AF8=null | spawnsym=A17E5B0C99341122 | levelsym=A17E5B0C99341122
+symbols-disagree	cs-space candidates: ng=00000000E6000000 | +0x8=00000000E68A4800 Empty/Empty base=0 bytes=0 alloc=0 grow=0 cap=0 count=0 flags=0 | +0x2B08=00000000E62B0800 Ready/Ready base=e62b0840 bytes=64 alloc=e62b0880 grow=4 cap=4 count=1 flags=0 | +0x2B10=00000000E62B1000 Ready/Ready base=e62b1040 bytes=64 alloc=e62b1080 grow=4 cap=4 count=3 flags=0 | game+0x7AF0=null | game+0x7AF8=null | spawnsym=0F0E0D0C0B0A0908 | levelsym=A17E5B0C99341122
+zero-level-symbol	cs-space candidates: ng=00000000E6000000 | +0x8=0000600DBADBAD00 Unreadable/HeaderUnreadable base=0 bytes=0 alloc=0 grow=0 cap=0 count=0 flags=0 | +0x2B08=00000000E62B0800 Ready/Ready base=e62b0840 bytes=64 alloc=e62b0880 grow=4 cap=4 count=1 flags=0 | +0x2B10=00000000E62B1000 Ready/Ready base=e62b1040 bytes=64 alloc=e62b1080 grow=4 cap=4 count=3 flags=0 | game+0x7AF0=unreadable | game+0x7AF8=unreadable | spawnsym=unreadable | levelsym=0000000000000000
+level-space-after-bind	cs-space candidates: ng=00000000E6000000 | +0x8=0000600DBADBAD00 Unreadable/HeaderUnreadable base=0 bytes=0 alloc=0 grow=0 cap=0 count=0 flags=0 | +0x2B08=00000000E62B0800 Ready/Ready base=e62b0840 bytes=64 alloc=e62b0880 grow=4 cap=4 count=1 flags=0 | +0x2B10=00000000E62B1000 Ready/Ready base=e62b1040 bytes=64 alloc=e62b1080 grow=4 cap=4 count=3 flags=0 | game+0x7AF0=unreadable | game+0x7AF8=unreadable | spawnsym=unreadable | levelsym=A17E5B0C99341122
+level-aliased-to-2b08	cs-space candidates: ng=00000000E6000000 | +0x8=0000600DBADBAD00 Unreadable/HeaderUnreadable base=0 bytes=0 alloc=0 grow=0 cap=0 count=0 flags=0 | +0x2B08=00000000E62B0800 Ready/Ready base=e62b0840 bytes=64 alloc=e62b0880 grow=4 cap=4 count=1 flags=0 | +0x2B10=00000000E62B0800 Ready/Ready base=e62b0840 bytes=64 alloc=e62b0880 grow=4 cap=4 count=1 flags=0 | game+0x7AF0=unreadable | game+0x7AF8=unreadable | spawnsym=unreadable | levelsym=0000000000000000

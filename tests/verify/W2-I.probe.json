@@ -1,0 +1,16 @@
+{
+  "probes": [
+    {
+      "id": "W2-I-oracle-sites",
+      "owner": "W2-I",
+      "dll": "build/W2-I/bin/probe_oracletap.dll",
+      "profile": "bare",
+      "completesAt": "attach",
+      "why": "E-7 oracletap will call into two functions inside the game's own image, and everything this packet knows about those five addresses was read out of echovr.exe ON DISK: the route-registration table at 0x1401B8E00, the two GET handlers, the rel32 call sites inside them, and the 20-byte prologues. A file is not a process. This reads all five prologues out of the image the LOADER MAPPED, through the shipped oracletap site table rather than a retyped copy of it, each with a one-byte-offset known-answer control so a match against a zeroed expectation cannot read as clean. rlay.dll is present, so the result is also the in-vivo form of W1-C's empty-intersection finding taken at the addresses W2-I would ever call. Asserts nothing that depends on engine state, so it cannot be an accident of timing. It establishes NOTHING about O2, O3, the builders' prototypes, or the tap's output -- those need a loaded match and wait for W1-F",
+      "claims": [],
+      "artifacts": [
+        "done.json"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,43 @@
+# facts/retired.tsv -- ids W0-2 has retired, and the row that replaced each.
+#
+# A retirement has to be recorded somewhere the merge reads.  Deleting the row alone
+# puts the id back in "not yet merged", so the drop that submitted it re-adds it on
+# the next run and the duplicate returns.  Listing it here also tells the submitting
+# packet which id survived, which a silent skip would not.
+#
+retired_id	surviving_id	reason
+CMDLINE.APPLY	CLI.APPLY	same function 0x140116720; one fact, one id
+CMDLINE.WINMAIN	ENTRY.WINMAIN	same function 0x14151D400; one fact, one id
+GAME.PTR_VA	GAME.SINGLETON_VA	same global 0x1420A0478; one fact, one id
+RESET.CONTACT_INITIALIZE_PC	RESET.CONTACT_INITIALIZE_PC_DO_NOT_CALL	W1-I withdrew the absence: its search truncated its own result list
+CAM.VIEWSTATE_GET.PROLOGUE	CAM.VIEWSTATE_GET.PROLOGUE	W1-H padded a 5-byte function with CC; facts.tsv holds the file's actual 20 bytes
+CAM.ENTER_FREECAM	CAM.ENTER_FREE_CAM	duplicate of the same address; one fact, one id
+CAM.GET_COMPONENT_SYSTEM	CS.LOOKUP_BY_SYMBOL	duplicate of the same address; one fact, one id
+CAM.NODEMGR_GLOBAL	ENGINE.CENGINE_PTR	same global 0x1420A0470; the surviving id was renamed to ENGINE.CENGINE_PTR because no subsystem owns it
+CAM.SETCAMERAMODE_API	CAM.SET_CAMERA_MODE_API	duplicate of the same address; one fact, one id
+CAM.SETCAMERA_API	CAM.SET_CAMERA_API	duplicate of the same address; one fact, one id
+CAM.VIEWSTATE_GET	VIEW.ACCESSOR	duplicate of the same address; one fact, one id
+CAM.VIEWSTATE_REALLOC	VIEW.WRITE_BEGIN	duplicate of the same address; one fact, one id
+CAM.VIEW_COMMIT	VIEW.PROPAGATE	duplicate of the same address; one fact, one id
+GAME.RENDER_FRAMECOUNT_FN	RENDER.FN	duplicate of the same address; one fact, one id
+GAME.RENDER_FRAMECOUNT_FN.PROLOGUE	-	owner retired as a duplicate; a prologue with no owner has no address
+CAM.VIEW_COMMIT.PROLOGUE	-	owner retired as a duplicate; a prologue with no owner has no address
+CAM.VIEWSTATE_GET.PROLOGUE	-	owner retired as a duplicate; a prologue with no owner has no address
+CAM.SETCAMERA_API.PROLOGUE	-	owner retired as a duplicate; a prologue with no owner has no address
+CAM.SETCAMERAMODE_API.PROLOGUE	-	owner retired as a duplicate; a prologue with no owner has no address
+CAM.ENTER_FREECAM.PROLOGUE	-	owner retired as a duplicate; a prologue with no owner has no address
+CAM.VIEWSTATE_REALLOC.PROLOGUE	-	owner retired as a duplicate; a prologue with no owner has no address
+CAM.GET_COMPONENT_SYSTEM.PROLOGUE	-	owner retired as a duplicate; a prologue with no owner has no address
+LOD.BODIES_PER_FRAME_OFF	PLAYER.CS_LOD_BUDGET_OFF	same field, and the surviving row is derived from PC code
+LOD.ROUNDROBIN_CURSOR_OFF	PLAYER.CS_LOD_CURSOR_OFF	same field, and the surviving row is derived from PC code
+LOD.THROTTLE_ENABLE_OFF	PLAYER.CS_LOD_ENABLE_OFF	same field, and the surviving row is derived from PC code
+PHYS.CI_TIMEOFFSET_OFF	PHYS.CI_TIME_OFFSET_S_OFF	same field, and the surviving row is derived from PC code
+PLAYER.CI_LIST_TAIL_OFF	PLAYER.CI_HIST_COUNT_OFF	same field, and the surviving row is derived from PC code
+RENDER.VT_SLOT_OFF	GAME.VTBL_RENDER_OFF	same field, and the surviving row is derived from PC code
+PLAYER.FP16_WIDEN_VA	BITIO.PLAYERSTATE_BITPACK_WRITE	duplicate of the same address; one fact, one id
+WORLD.REORIGIN_OFF_LO	WORLD.REORIGIN_OFF_X	renamed: it is the x of a float3, not the low half of a scalar pair (docs/spikes/REORIGIN.md S2.1)
+WORLD.REORIGIN_OFF_HI	WORLD.REORIGIN_PENDING_OFF_Z	renamed: it is the z of a DIFFERENT, transient float3, not the high half of a pair with OFF_LO (docs/spikes/REORIGIN.md S2.1/S2.2)
+CAM.NODE_ARRAY_BASE	ENGINE.CENGINE_PTR	renamed: the global is NRadEngine::CEngine by its own RTTI, read by 190 distinct functions; a camera-prefixed id for it was a subsystem naming the engine root after one field
+SOUND.SYSTEMS_PTR_VA	ENGINE.CENGINE_PTR	same global 0x1420A0470, proposed independently by W2-H: the CSoundPlayer it reaches is the field at +0x2CF80 INSIDE this object. Recorded rather than dropped, so the id cannot silently return and the reading is not lost
+NETGAME.GAMESPACE_MT_OFF	NETGAME.SPECTATORCAM_CS_OFF	same offset +0x2B10, two contradictory objects; +0x2B10 is the spectator camera CS (ENG-W2E-WIRE.md 6, ENG-W1H-FIX.md 7). The map gamespace handle is IDENT.NETGAME_GAMESPACE_OFF = 0x8. Its /camera_transform observation is folded into the survivor's evidence.
+LOCAL.ACTION_MAGNITUDE_OFF	-	no definition and no consumer: the id emitted only an incomplete type in facts_generated.h and nothing in src/ or tests/ read it (ENG-SMALL-5, ENG-SMALL-6, AUDIT_K1). Its +2 is DERIVED from LOCAL.BROADCASTER_CI_STRIDE and the element base -- no instruction encoding carries the 2 -- so it can never be anchored and never leave U. The reading itself is kept in W1-E's drop facts/pending/W1-E_R2.tsv:87, which this retirement now makes the merge skip: if the +2 is ever anchored it returns as a NEW id with that anchor, not by re-adding this one.

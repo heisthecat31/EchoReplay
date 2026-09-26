@@ -1,0 +1,25 @@
+{
+  "probes": [
+    {
+      "id": "W1-H-camera",
+      "owner": "W1-H",
+      "dll": "build/W1-H/bin/probe_camera.dll",
+      "profile": "offline-local",
+      "completesAt": "match",
+      "exclusive": true,
+      "timeoutSec": 300,
+      "why": "Settle, by measurement, which layer moves the desktop view. Five arms in one launch, each the control for the next: BASELINE (60 frames, nothing written) records where the engine's own camera is, so a later equality with a pose 400 m above the arena is a result rather than a coincidence; WRITE-P0 (120) then WRITE-P1 (120) show CCameraNode[0] carries what we write and not a fixed value; CI-ARM (120) clears ci+0x274 after each SetPose so CAM.SPECTATOR_UPDATE takes the node from the CI instead of the view state, where node+0x98 gets NO aspect conversion - which is the discriminator for which arm drove the node, and which also makes the ci+0x274 reassert counter move so its flat reading in arm A means something; RECOVERY (60) hands the camera back. Answers W1-H section 9 items 1, 2, 3, 5 and 6 and settles the corrected gate criterion from audit F5, whose earlier form (gateReasserts == 0 after frame 1) could never have passed against a cumulative counter.",
+      "claims": [
+        "camera",
+        "tick-slot"
+      ],
+      "answers": [
+        "w1h-node-source",
+        "w1h-spectator-cs-present"
+      ],
+      "artifacts": [
+        "frames.jsonl"
+      ]
+    }
+  ]
+}

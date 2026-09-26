@@ -1,0 +1,16 @@
+{
+  "probes": [
+    {
+      "id": "W1-E-attach",
+      "owner": "W1-E",
+      "dll": "build/W1-E/bin/probe_entityattach.dll",
+      "profile": "bare",
+      "completesAt": "attach",
+      "why": "the two 16-slot bounds HP1's entire safety argument rests on -- cmp cx,10h in IsLocallyControlled and cmp dx,10h in PeerTime -- read out of the MAPPED image rather than the file on disk, because a detour lands in memory and W1-C's first real sweep was refused for exactly that. Plus the prologues of the five functions E-4 calls through a pointer and the eight it reasons about, and a known-answer control so a comparison that always agreed cannot report a green it did not earn. If a bound is patched the synthetic owner is unsafe and W1-E's match probes must not run",
+      "claims": [],
+      "artifacts": [
+        "done.json"
+      ]
+    }
+  ]
+}

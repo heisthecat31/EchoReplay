@@ -1,0 +1,153 @@
+# sha256 over each guard's BODY and its DECLARED SCOPE.
+# Hashing the guard's name would let someone weaken the assertion inside it
+# (`== 480` -> `> 0`) or drop rows from the set it covers, with nothing
+# detecting either.  Regenerate deliberately: factcheck.py --update-hashes,
+# which needs a --reason and refuses a narrowing or a body change without
+# its own flag.  Every blessing since is recorded below, newest last.
+#     guard_base_agrees scope 142 -> 147
+#     guard_coverage scope 1458 -> 1493
+#     guard_evidence_consistent scope 1251 -> 1286
+#     guard_evidence_site scope 710 -> 732
+#     guard_func_starts scope 402 -> 415
+#     guard_prologue scope 587 -> 610
+#     guard_provenance_evidence scope 1251 -> 1286
+#     guard_role scope 1458 -> 1493
+#     guard_tail_calls scope 127 -> 139
+#     guard_text_at scope 2 -> 4
+#     guard_value_checked scope 1254 -> 1289
+#     guard_verdict scope 1458 -> 1493
+#     reason: merged 0 row(s) and 23 anchor(s) from the drop channel
+# REGISTERED 2026-09-08T06:03:28Z
+#     guard_anchors scope 777 -> 781
+#     guard_coverage scope 1493 -> 1497
+#     guard_evidence_consistent scope 1286 -> 1291
+#     guard_evidence_site scope 732 -> 736
+#     guard_func_starts scope 415 -> 416
+#     guard_provenance_evidence scope 1286 -> 1291
+#     guard_role scope 1493 -> 1497
+#     guard_tail_calls scope 139 -> 140
+#     guard_text_at scope 4 -> 6
+#     guard_value_checked scope 1289 -> 1294
+#     guard_verdict scope 1493 -> 1497
+#     reason: merged 1 row(s) and 4 anchor(s) from the drop channel
+# REGISTERED 2026-09-08T06:26:02Z
+#     guard_anchors scope 781 -> 790
+#     guard_evidence_consistent scope 1291 -> 1300
+#     guard_evidence_site scope 736 -> 744
+#     guard_provenance_evidence scope 1291 -> 1300
+#     guard_value_checked scope 1294 -> 1303
+#     reason: merged 9 row(s) and 9 anchor(s) from the drop channel
+# REGISTERED 2026-09-08T06:48:59Z
+#     guard_coverage scope 1497 -> 1503
+#     guard_evidence_consistent scope 1300 -> 1306
+#     guard_evidence_site scope 744 -> 747
+#     guard_func_starts scope 416 -> 419
+#     guard_provenance_evidence scope 1300 -> 1306
+#     guard_role scope 1497 -> 1503
+#     guard_tail_calls scope 140 -> 143
+#     guard_text_at scope 6 -> 12
+#     guard_value_checked scope 1303 -> 1309
+#     guard_verdict scope 1497 -> 1503
+#     reason: merged 0 row(s) and 0 anchor(s) from the drop channel
+# REGISTERED 2026-09-08T07:09:36Z
+#     guard_anchors scope 790 -> 810
+#     guard_base_agrees scope 147 -> 151
+#     guard_coverage scope 1503 -> 1558
+#     guard_evidence_consistent scope 1306 -> 1358
+#     guard_evidence_site scope 747 -> 775
+#     guard_func_starts scope 419 -> 445
+#     guard_prologue scope 610 -> 620
+#     guard_provenance_evidence scope 1306 -> 1358
+#     guard_role scope 1503 -> 1558
+#     guard_source_sanity scope 194 -> 197
+#     guard_tail_calls scope 143 -> 169
+#     guard_text_at scope 12 -> 52
+#     guard_value_checked scope 1309 -> 1361
+#     guard_verdict scope 1503 -> 1558
+#     reason: merged 6 row(s) and 20 anchor(s) from the drop channel
+# REGISTERED 2026-09-08T07:28:15Z
+#     guard_anchors scope 810 -> 811
+#     guard_coverage scope 1558 -> 1560
+#     guard_evidence_consistent scope 1358 -> 1360
+#     guard_evidence_site scope 775 -> 776
+#     guard_func_starts scope 445 -> 446
+#     guard_provenance_evidence scope 1358 -> 1360
+#     guard_role scope 1558 -> 1560
+#     guard_tail_calls scope 169 -> 170
+#     guard_text_at scope 52 -> 54
+#     guard_value_checked scope 1361 -> 1363
+#     guard_verdict scope 1558 -> 1560
+#     reason: merged 0 row(s) and 1 anchor(s) from the drop channel
+# REGISTERED 2026-09-08T07:30:59Z  --accept-narrowing
+#     guard_anchors scope 811 -> 813
+#     guard_evidence_consistent scope 1360 -> 1362
+#     guard_provenance_evidence scope 1360 -> 1362
+#     guard_value_checked scope 1363 -> 1365
+#     guard_source_sanity scope 197 -> 195  NARROWING
+#     reason: W2-P1-30b: IDENT.LOADOUT_PUBLISHED_FLAG_OFF and IDENT.LOADOUT_DUMP_COUNT_OFF gained disp32 anchors and were promoted PC_PRESENT -> PC_CORROBORATED/V, so they left guard_source_sanity's UNKNOWN-provenance scope and entered the four value/anchor guards
+# REGISTERED 2026-09-08T21:48:55Z
+#     guard_anchors scope 813 -> 815
+#     guard_evidence_consistent scope 1362 -> 1364
+#     guard_provenance_evidence scope 1362 -> 1364
+#     guard_value_checked scope 1365 -> 1367
+#     reason: merged 4 row(s) and 2 anchor(s) from the drop channel
+# REGISTERED 2026-09-08T22:15:04Z
+#     guard_anchors scope 815 -> 818
+#     guard_coverage scope 1560 -> 1563
+#     guard_evidence_consistent scope 1364 -> 1367
+#     guard_evidence_site scope 776 -> 779
+#     guard_prologue scope 620 -> 622
+#     guard_provenance_evidence scope 1364 -> 1367
+#     guard_role scope 1560 -> 1563
+#     guard_value_checked scope 1367 -> 1370
+#     guard_verdict scope 1560 -> 1563
+#     reason: merged 3 row(s) and 3 anchor(s) from the drop channel
+# REGISTERED 2026-09-09T11:37:47Z
+#     guard_anchors scope 818 -> 820
+#     guard_base_agrees scope 151 -> 153
+#     guard_coverage scope 1563 -> 1565
+#     guard_evidence_consistent scope 1367 -> 1369
+#     guard_evidence_site scope 779 -> 781
+#     guard_provenance_evidence scope 1367 -> 1369
+#     guard_role scope 1563 -> 1565
+#     guard_value_checked scope 1370 -> 1372
+#     guard_verdict scope 1563 -> 1565
+#     reason: merged 2 row(s) and 2 anchor(s) from the drop channel, rejected 2
+# REGISTERED 2026-09-09T11:47:25Z
+#     guard_coverage scope 1565 -> 1567
+#     guard_evidence_consistent scope 1369 -> 1371
+#     guard_func_starts scope 446 -> 447
+#     guard_prologue scope 622 -> 624
+#     guard_provenance_evidence scope 1369 -> 1371
+#     guard_role scope 1565 -> 1567
+#     guard_tail_calls scope 170 -> 171
+#     guard_value_checked scope 1372 -> 1374
+#     guard_verdict scope 1565 -> 1567
+#     reason: merged 1 row(s) and 0 anchor(s) from the drop channel
+guard	scope_rows	sha256	scope_ids_sha256
+guard_anchors	820	2a7921edc84dab72bab71d8a30e24746d2e4867f8698c00d963c2afa2ffbb0b2	601c143021fdb8f3f92e85a5d00442ff1a48ba79a52bbe8ee0aea65c6d79d97c
+guard_arm64_evidence	27	e6bedd183d39a465fd5432c54061e5793ddbdb9f457ee758f45ec0372edae86a	35650864e963b489d6992d1f5c60d6820866dbadc8d048d0b56c8542e685886b
+guard_arm64_withheld	27	b61f6ad6f2a73aa4590afd70854428a08665f207a24305ba24d724a409840312	35650864e963b489d6992d1f5c60d6820866dbadc8d048d0b56c8542e685886b
+guard_base_agrees	153	714278d2e2cea2e59c80b10a785489744beb8af9db7706c8d6d352fcd4767b62	f58edc89ddd2bcf6aea27a55384d21d595b560e728a8be6cb1fa8401ac761177
+guard_binary_identity	0	8b0be8124d4d2c668a328da92169ad0762957e94a0bde10a720bbfe63c4bb620	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+guard_coverage	1567	1ca0efb4988cd5cc304d2aa3fff2b7582f6f3df08ae4a10725ee0fbd50ac98d6	a0b3caaf767d9e87832753d56d48582aaae2ef1361c6ebeab2bd269b2bb62cc7
+guard_derived	7	f53a36d1d30b1db2a3f430c52b9bfc8da2ca1c48664fb85340521c4aa534b036	731e0a1c3284b3f48841752bc7ba755e462e536d1e54c3dccac4a7fcdc831639
+guard_evidence_consistent	1371	3583ca00a509afd4d4d936f79c610a1184046027c266d2587258f7c181215b6d	ee92b5b0fd0a98e6ec41e4aec33208f21bb0ef908232297284e491157dc271f2
+guard_evidence_site	781	c4abd868714899ae00cae1233e387091dca922f805d1946cc9303c0071a76b9b	ca7f2f6a88b1409eb1508a626933cd0f0ebf3b7bcf61caa62293d52933782d05
+guard_export_table	31	b6b23b86d22f77a0608643a23e4e91bd2749039c7c70b55feda2abad619e97f6	c865980e7bad02dc501d8afd11971175c4cb341c3e921cbbf02753baa3ef9cb2
+guard_func_starts	447	2641caa4ba53ff0cf574bb7c8b1a02db54562f7e5ac1fec8159692dfcf3c089d	189ea2a937601748c639d97194536ddf198c24fa9c56d3fab3d235006b5ae18f
+guard_hand_transcript	60	38e2700b114b382bb6a3d649140bdea32f0bc5fac5b902882016d11b7848580e	54148cc5c6b7aeaadfa5d2741baf36724303cdf228744a616c2ed2b025f752e2
+guard_libr15_symbols	27	ca4c44f2bd0eac93202ea18e5e55b8c5c9cd0540fbca00beb41a2fde759d8204	35650864e963b489d6992d1f5c60d6820866dbadc8d048d0b56c8542e685886b
+guard_matsym	6	b7819444a03cf2d2c4f22ce2614e6282398b44a1ab09f0782d62fa26ad28efef	8b8324728215725464615d13e4715aa4f6fb653ad85e12f63b30300de1b78f95
+guard_module_md5	1	91015c3d907772bc4341d2857f8027ab305b83c35b464c2dbf99e65e3696b7c3	3eb9f84bf3221c61828f688656e98d2a9b2c902646b52ece6b6792bc13e7caf5
+guard_not_in_code	3	a48d8656dd18854f809f14f320b8952558c2c58771c9a7619e96c9e3f08196c8	bf4d1d06fee5192eb41a13747fa56fa7daca5ac3c2c3abf9ed3081cbf623a4a3
+guard_pending_drops	0	9f22a25efe6affe2ab669271582b913d082e3c840fc86bd6dfbe54cd4fca0037	e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+guard_prologue	624	6094e70f9ff0cc1392edf6b4eed0cb63932a68d099f11c9bf0737fb1ef6173ff	18b029be56e09717c593e48c924010a80f0e53ad57f81ed496e1fce18630b433
+guard_provenance_evidence	1371	95991bfd83991b3dac5959cd1845e1b6895722c75be35de2e14509936615a258	ee92b5b0fd0a98e6ec41e4aec33208f21bb0ef908232297284e491157dc271f2
+guard_role	1567	b4f45a52c5eb688fa50b3283e282b10a2815a87fff0c2043ad667bc4a4a1b717	a0b3caaf767d9e87832753d56d48582aaae2ef1361c6ebeab2bd269b2bb62cc7
+guard_rva_pairs	6	f3dc48dcddae71288aba63e8b8f5cd3f4561c8c0b35451274f584444cf464a76	c7ddd76bd4a6c0db64c1872813eb9a178bdec58ae27c84a3c66612bdff1c4df7
+guard_source_sanity	193	545b0b0b4cffcf809e0db5769087989cd7ab4181cedca3b8b82c2756c83c7244	4062a29e1bd64f4b3dba574dd48f2edaab12eadc20b149d7b7f89efd35d4a19e
+guard_tail_calls	171	343a60221b778b8eba8f9f3459d844930f52b2ecfed56301b4f661c09e19e2f5	07a29373b30b16b25395f27f000e6ac6108ad0af2b2924a4265e1c666c48ba2d
+guard_text_at	54	afe20db0be8aa40a660ad8aa7598035c47d52fcb874570576ee86dfc45f0e517	7fac21cb4181bdd96e12cc873cca67d3acfc56778fc9cf9071b2214810b18d4a
+guard_value_checked	1374	d3c948bff42e510ad331b73f3665e5eb7edb46dbd06007a3623a5236d70307b3	b755699cf3e9a6c8e03b9ff195d99a8fef28c0b66766e85f0b2f84ce1d213478
+guard_verdict	1567	9ee9cc5642e78f673cb8b9c045f61212ee16407deaef3c00fd9733d6d36e684c	a0b3caaf767d9e87832753d56d48582aaae2ef1361c6ebeab2bd269b2bb62cc7

@@ -1,0 +1,5 @@
+{
+  "clause": 4,
+  "verdict": "could-not-ask",
+  "why": "the row is present and its staleDetected field is ABSENT -- a row that does not report the count cannot be read as reporting zero."
+}

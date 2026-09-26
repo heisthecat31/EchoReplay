@@ -1,0 +1,26 @@
+{
+  "probes": [
+    {
+      "id": "W1-D-slot-barelevel",
+      "owner": "W1-D",
+      "dll": "build/W1-D/bin/probe_tick.dll",
+      "profile": "bare-level",
+      "completesAt": "match",
+      "why": "the slot claim end to end, on the first profile that may reach a frame loop. W1-F's lever at 0x140116CD5 means an absent -level sets the boot-to-multiplayer bit and SessionFlags bit 0, and its presence prevents both; bare-level passes -level and nothing else, so bit 27 of CR15Game+0x7AE0 is CLEAR, pnsovr occupies +0x8500 and the free slot must be +0x8510. The probe does not take that expectation from this file: it reads the game's own command line, derives the same prediction the engine derives, and ASSERTS the slot it claimed matched. Then: exactly one tick per RENDERED frame against the CncaGame+0x830 counter Render increments once per frame; the delta handed to us equals CClock+104; CClock+0x28 advances by exactly that delta, which settles whether the frame drives the clock heartbeat once or twice; and a GetProcAddress tripwire records every name the engine resolves against us across the whole session. Files a verdict on 600 frames if it cannot get 3600, rather than filing nothing",
+      "claims": ["tick-slot"],
+      "artifacts": ["done.json", "ticks.jsonl"],
+      "timeoutSec": 180
+    },
+    {
+      "id": "W1-D-slot-flat",
+      "owner": "W1-D",
+      "dll": "build/W1-D/bin/probe_tick.dll",
+      "profile": "flat",
+      "completesAt": "match",
+      "why": "the same probe, unchanged, on the -noovr half of the matrix: bit 27 SET, pnsdemo occupies +0x8510, so the free slot must be +0x8500 - the opposite answer, asserted by the same code path from the same command-line derivation. This is the configuration the desktop viewer actually ships, so it is the half that most needs an in-vivo confirmation; it needs no profile of its own because flat is already -noovr and is on the critical path for other packets. Queue it when flat opens; do not spend a launch on it before then",
+      "claims": ["tick-slot"],
+      "artifacts": ["done.json", "ticks.jsonl"],
+      "timeoutSec": 300
+    }
+  ]
+}

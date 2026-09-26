@@ -1,0 +1,27 @@
+{
+  "probes": [
+    {
+      "id": "W1-M-uidag-offline",
+      "owner": "W1-M",
+      "dll": "build/W1-M/bin/probe_uidag.dll",
+      "profile": "offline-local",
+      "completesAt": "match",
+      "timeoutSec": 120,
+      "timeoutJustification": "every read here needs a turning frame loop and at least one game space, which only exists after the match has loaded, so an attach-window run would report all four reads UNDETERMINED and buy nothing. The probe does not hold the launch open for the whole deadline: it waits for the game-space list to become non-empty, samples for 3 s, and files. On a launch that reaches a match it finishes seconds after the match does, and the harness's complete-on-report ends the launch then.",
+      "why": "the four things docs/spikes/W1-M.md S3.2 could not settle offline, all by reading and none by hooking. R1: the task-dispatch flag *(u32*)(*(void**)TlsGetValue(idx) + 0x730) for EVERY thread carrying an engine context - non-zero anywhere means a registered CS callback can run on a CTaskKernel worker and ImGui from one is unsafe, which is the last thing keeping the S3 registration route a fallback rather than a primary. R2: bit 23 of *(u32*)(game+0x828), which when SET skips the entire stage-0..3 component-system pass and would INVERT this memo's own 'register at band 3' recommendation - the cheapest read on the list and the one most likely to embarrass the packet that queued it. R4: the pass window at space+0xC3A/+0xC3C sampled through the match, which says which of the seven band arms are actually driven and carries an out-of-band counter that would falsify the static reading of the band boundaries. R5: the scheme record count at scheme+0x610 first and last, where growth is late registration observed rather than argued.",
+      "scope": "ESTABLISHES R1, R2, R4 and R5 as defined above, on THIS profile only - the dispatch flag is per-thread engine state and a different profile may schedule differently, so a clean R1 here is not a claim about the VR path. DOES NOT ESTABLISH R3, the ordering of NRadGui::EndFrame against the stage-6 pass: that was settled statically instead (EndFrame's only reachable call site is the vtable +0x88 call at 0x140509518, between the stage-5 and stage-6 driver calls) and confirming it in vivo would need detours on two game functions, which this probe declines to install. It also says nothing about WHICH thread runs the frame loop; R1 is answered over all threads precisely so that it does not have to be. Every check reports Ok, Failed or COULD-NOT-DETERMINE, and `checked` counts only the first two, so a launch that never reaches a match reports checked=0 rather than a confident nothing.",
+      "claims": [],
+      "guards": [],
+      "answers": [
+        "w1m-tls-component-table",
+        "w1m-game-828-bit23",
+        "w1m-band-constants",
+        "w1m-scheme-610-growth"
+      ],
+      "artifacts": [
+        "done.json"
+      ],
+      "exclusive": false
+    }
+  ]
+}

@@ -1,0 +1,5 @@
+{
+  "clause": 3,
+  "verdict": "not-clean",
+  "why": "F2: the only asked-pass row is the declaration row. An input restated is not an observation, so nothing here was observed to pass."
+}

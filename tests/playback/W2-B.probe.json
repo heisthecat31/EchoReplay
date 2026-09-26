@@ -1,0 +1,23 @@
+{
+  "_comment": "W2-B's in-match probe request. The durable copy lives here because runs/ is deliberately uncommitted (W1-J: artifacts are machine-local evidence, not source); copy it into runs\\queue\\ before a sweep, the same way tests\\loaderprobe\\W1-C.probe.json is. `answers` names EXACTLY the reads this probe answers in full -- see `scope` for the four it deliberately does not claim.",
+  "probes": [
+    {
+      "id": "W2-B-match",
+      "owner": "W2-B",
+      "dll": "build/W2-B/bin/probe_playback.dll",
+      "profile": "offline-local",
+      "completesAt": "match",
+      "guards": [
+        "offline-bit-lock"
+      ],
+      "answers": [
+        "w2b-host-arm-confirm",
+        "w2b-world-origin-shift"
+      ],
+      "why": "Two questions that decide how playback reads the world, both answerable by passive reads at two moments and neither answerable offline. (1) The role-flags qword read BOTH ways in the same tick -- directly off CR15Game and indirectly through CR15NetGame -- because ENTITY.UPDATE_TARGET_STATE takes a different arm on the IS_HOST branch, skipping both the extrapolate branch and the interpolate call, and the two routes are assumed equal by code that has never seen them disagree. (2) Whether the world re-origin accumulator is ever non-zero, read through WORLD.REORIGIN_GLOBAL dereferenced and null-checked. The second sample 60 s later is what makes the first mean anything: the cumulative triple is never reset, so one reading cannot separate 'no shift has ever happened' from 'a shift happened before we looked'.",
+      "scope": "Passive reads only. It writes nothing, installs no hook and needs no capture. It ANSWERS w2b-host-arm-confirm and w2b-world-origin-shift in full, including every intermediate their `wants` fields name, so a zero is distinguishable from an unresolved pointer. It deliberately does NOT claim W2-B's other four parked reads, and neither should anything else until their blockers move: w2b-ring-depth-and-order, w2b-interp-enable-bit and w2b-interp-output-vs-installed all sample a REPLAYED body's PhysCI, so they need a capture loaded and PLAYING, and none of the six canonical profiles in tools\\harness.ps1 loads one -- they are blocked on a replay profile, not on a collector; w2b-transform-lands-after-jump names CTransformCS's local transform, whose PC offset has never been derived, so no probe can read it and one that guessed the nearest plausible field would report a confident number for the wrong slot.",
+      "timeoutSec": 180,
+      "timeoutJustification": "The probe samples at the first tick carrying a CR15NetGame and again 60 s of sim time later, then writes its verdict. 180 s leaves room for menu-to-match on a slow machine without waiting on a launch that is never going to reach a match; if it does not, the probe has already written a NOT-RUN naming what it was waiting for."
+    }
+  ]
+}

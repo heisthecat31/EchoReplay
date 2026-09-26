@@ -1,0 +1,5 @@
+{
+  "clause": 3,
+  "verdict": "not-clean",
+  "why": "THE W1J15-1 DISCRIMINATOR'S other side: byte-for-byte clean-baseline with declaration flipped to true on the two observation rows. Under the command-mode parse fixed at bd314a4 both this and clean-baseline read as 'every row is a declaration row' and returned the SAME verdict; the pair is only decidable with that fix in."
+}

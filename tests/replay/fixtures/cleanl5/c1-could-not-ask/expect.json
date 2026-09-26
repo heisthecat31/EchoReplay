@@ -1,0 +1,5 @@
+{
+  "clause": 1,
+  "verdict": "could-not-ask",
+  "why": "ownerDrawsAtLevel is ABSENT and every other clause-1 field is affirmative, so nothing present decides it: absent is could-not-ask and the clause names the field."
+}

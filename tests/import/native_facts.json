@@ -1,0 +1,32 @@
+{
+ "about": "Facts measured by FORMATS-P1 from native captures through `echodemo rows` (tools/import/measure_native.py facts). src/import/import_facts.h is pinned to these rows by tests/import/test_facts.cpp.",
+ "captures": ["2026-09-24_12-59-23 (A, 455 s, 8 players, 156232 player rows)", "2026-09-20_19-20-29 (B, 137 s, 8 players, 48880 player rows)"],
+ "api_corpus": ["rec_2025-08-03_17-15-57", "rec_2025-08-03_18-12-28 (127188 player samples, every 3rd line)"],
+ "facts": {
+  "H0": {"status": "measured", "value": true, "evidence": "team 0 (blue) stands at z<-60 and team 1 at z>60 in both sources; SimState ori chirality up .979/.974, fwd.v .548/.596, left-hand-on-Rx .977/.974 vs API head .971/.582/.965; a pure x mirror would need the API to swap hand labels too. T2 still owns the final x proof."},
+  "H1": {"status": "measured", "value": [0.0, 0.0, 0.0], "evidence": "com + handOff lands on the disc in grip (median 0.105/0.113 m, API holding-hand cluster p10 0.100 m); handOff is hand - com in world axes; native handOff y median -0.782/-0.667 vs API hand-head y -0.692, so com = head within the +-0.1 m the two native captures differ by."},
+  "H2": {"status": "measured", "value": "BodyBasis", "evidence": "hmdOri is yaw-only (tilt 0.11 deg quantisation on 90-94% of rows) so it is not the API head basis; its yaw differs from the head by p50 38-59 deg where API body-vs-head is 8 deg, so no API field carries it. BodyBasis is the nearest yaw-only frame; its visual effect is a P8 check."},
+  "H3": {"status": "measured", "value": "HeadBasis", "evidence": "SimState ori tilt p50 11.8/13.2 deg, pitch p50 -2.6 deg vs API head 13.8 deg / -5.4 deg; the three chirality numbers match the API head basis (see H0)."},
+  "H4": {"status": "measured", "value": true, "evidence": "mean R_ori^T R_hand matches the API mean R_head^T R_hand: diagonals 0.40-0.56 native vs 0.41-0.53 API; the largest native-vs-API difference (0.15) is below the 0.18 the two native captures differ by, where a swapped or negated hand axis would move a diagonal by 0.5 or more."},
+  "H5": {"status": "measured", "value": "Possession", "evidence": "the disc owner stays set after the throw: 47.7%/48.1% of owned rows are over 1 m from the owner's hands at p50 9.5 m/s; the API holding_*==disc behaves the same (40.9% over 1 m)."},
+  "P1.bendBack": {"status": "measured", "value": 0.17453, "evidence": "median over 205112 rows, p1 -2.51"},
+  "P1.bendFwd": {"status": "measured", "value": -1.02974, "evidence": "median over 205112 rows, p99 1.41"},
+  "P1.restPoseHeight": {"status": "measured", "value": 1.775, "evidence": "median over 205112 rows, p1 0.34"},
+  "O-2.discIdValue": {"status": "measured", "value": 0, "evidence": "every tag-1 body row in A (20274) and B (6142) carries component id 0"},
+  "I-1.geoBitLeft": {"status": "measured", "value": 32, "evidence": "with only 0x20 set the left hand (com+lHandOff) moves p50 0.057/0.063 m/s and the right 1.10/1.35 m/s"},
+  "I-1.geoBitRight": {"status": "measured", "value": 64, "evidence": "with only 0x40 set the right hand moves p50 0.064/0.064 m/s and the left 1.10/1.17 m/s"},
+  "I-5.idleWord": {"status": "measured", "value": 16, "evidence": "AND of bits28 over all 205112 rows is 0x10"},
+  "I-6.stunDurationMedianS": {"status": "measured", "value": 2.0, "evidence": "all 35 SR15StunPlayerMsg rows carry 2.0 s"},
+  "I-7.boostSpanS": {"status": "measured", "value": 0.2222, "evidence": "0x100 span median 0.2222 s over 1274 spans (p10 0.200, p90 0.2256)"},
+  "I-9.thrusterAxis": {"status": "measured", "value": [0.0, 0.0, 1.0], "evidence": "acceleration in hand frame while one thruster bit is set: 0x400 -> left hand mean (0.03,-0.03,0.44), 0x800 -> right hand (0.04,-0.01,0.44); the other hand's resultant is 0.11-0.17"}
+ },
+ "p7": {
+  "about": "FORMATS-P7 T1 (DESIGN-FORMATS 9.2): native captures reduced to API-like files by tools/import/validate_infer.py, re-inferred by import_inferprobe. Thresholds tuned on A (2026-09-24_12-59-23) only; B (2026-09-20_19-20-29) held out. A gated rule is enabled only when B meets precision >= 0.85 and recall >= 0.50 at 30 and 15 Hz. No gated rule passed, so import_facts.h keeps the design thresholds; the most precise combination found on A is recorded below, not adopted.",
+  "I-7": {"enabled": false, "A30_precision": 0.562, "A30_recall": 0.536, "A15_precision": 0.378, "A15_recall": 0.338, "B30_precision": 0.498, "B30_recall": 0.519, "B15_precision": 0.373, "B15_recall": 0.352},
+  "I-8": {"enabled": false, "A30_precision": 0.323, "A30_recall": 0.167, "A15_precision": 0.4, "A15_recall": 0.167, "B30_precision": 0.25, "B30_recall": 0.088, "B15_precision": 0.364, "B15_recall": 0.118},
+  "I-9": {"enabled": false, "A30L_precision": 0.406, "A30L_recall": 0.18, "A30R_precision": 0.413, "A30R_recall": 0.187, "A15L_precision": 0.644, "A15L_recall": 0.183, "A15R_precision": 0.597, "A15R_recall": 0.186, "B30L_precision": 0.285, "B30L_recall": 0.194, "B30R_precision": 0.271, "B30R_recall": 0.17, "B15L_precision": 0.463, "B15L_recall": 0.214, "B15R_precision": 0.493, "B15R_recall": 0.223},
+  "I-2": {"enabled": false, "A30_precision": 0.247, "A30_recall": 0.069, "A15_precision": 0.206, "A15_recall": 0.023, "B30_precision": 0.176, "B30_recall": 0.054, "B15_precision": 0.2, "B15_recall": 0.036, "evidence": "FIX-F2: gated like I-7..I-10. movingAttachedMinSpeed tuned on A over 0.001..10 m/s; the design 0.001 scores B30 P 0.027 R 0.108, and no value reaches the gate on A or B"},
+  "I-10": {"enabled": false, "A30_precision": 0.12, "A30_recall": 0.047, "A15_precision": 0.092, "A15_recall": 0.029, "B30_precision": 0.014, "B30_recall": 0.01, "B15_precision": 0.0, "B15_recall": 0.0},
+  "best_on_A_not_adopted": {"boostMinGainMps": 1.0, "boostMinPeakAccel": 6, "boostWindowS": 0.15, "brakeMaxAccel": -4, "brakeMinFrames": 3, "brakeMaxSpeedRatio": 0.5, "thrustMinAccel": 1.2, "thrustMaxAccel": 6, "thrustMinFrames": 5, "thrustMinCos": 0.7, "punchMinHandSpeed": 5, "punchMinFrames": 2, "movingAttachedMinSpeed": 10}
+ }
+}

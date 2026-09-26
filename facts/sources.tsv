@@ -1,0 +1,81 @@
+# facts/sources.tsv -- the closed vocabulary of source names, and the artifact each one
+# actually reduces to.  The design requires a guard to name two DIFFERENT
+# sources.  Comparing the two strings for inequality does not establish that: `R6_decimal`
+# and `R6_appendix` are two spellings of one lane, and a placeholder like
+# `R12_or_lane_citation` names nothing at all.
+#
+# The gate resolves both names through this table and rejects the row if they land on the
+# same artifact.  A name that is not in this table is rejected outright, so a row cannot
+# invent a source.
+#
+# fabricatable  no   an artifact this repository's code cannot produce or alter: the real
+#                    echovr.exe, a separate extraction of it, real captured wire bytes.
+#               yes  a document, a summary, or a transcription.  A row may cite these, but
+#                    tier V / V-PRIMARY additionally requires at least one `no`.
+#
+# supports     which KIND of claim this source can carry, so a runtime reading and a
+#              decompile are not treated as interchangeable (S4.6 rule 4):
+#                static   the artifact on disk or an extraction of it -- offsets, addresses,
+#                         byte strings, sizes. What the build IS.
+#                runtime  what the running system DID. Strong for behaviour; weak for
+#                         structure, because a mapped image can be patched after load and
+#                         a wire byte tells you what was sent, not where the field lives.
+#                wire     what goes ON THE WIRE. Captured bytes are not weak corroboration
+#                         of a message layout -- they ARE the layout, more directly than any
+#                         decompile. A wire claim also accepts a `static` source, because the
+#                         serialiser in the binary sees the same encoding; it does not accept
+#                         `runtime` alone, since what a live struct holds is not what was sent.
+#                both     a document. Weak either way; never satisfies the unfabricatable
+#                         requirement on its own.
+#
+#              A source may support more than one kind, comma-separated. The claim's kind
+#              comes from the guard: G_CORPUS/G_WIRE are wire, G_HARNESS is runtime, and
+#              everything else is static.
+#
+#              The gate requires a row whose guard makes a STATIC claim to hold at least one
+#              unfabricatable source that supports `static`. A harness observation may be its
+#              SECOND source -- corroboration that the loaded image agrees with the file -- but
+#              it cannot be the one that certifies an offset. That strengthens rule 4 rather
+#              than widening it: the "at least one unfabricatable" requirement still holds, and
+#              now the unfabricatable one has to match the kind of claim being made.
+#
+source	artifact	fabricatable	supports	note
+pe_file_bytes	echovr_exe	no	static	bytes read from the shipped binary, md5 caa05ee3bca2f5df0809994e93e2cc05
+pe_export_table	echovr_exe	no	static	PE export directory parsed out of the same file
+ida_db_functions	ida_extraction	no	static	function boundaries from a separate IDA extraction of the same md5
+ida_db_instr	ida_extraction	no	static	instruction text from that extraction
+ida_db_instr_bytes	ida_extraction	no	static	instruction bytes stored by that extraction
+ida_db_xrefs	ida_extraction	no	static	cross-references from that extraction
+ida_db_taint	ida_extraction	no	static	base-register taint computed over that extraction
+ida_db_meta	ida_extraction	no	static	extraction metadata: md5, image base, section table
+ida_db_imports	ida_extraction	no	static	the import table as that extraction records it
+libr15_symbols	libr15_so	no	static	the Quest ARM64 build, supplying a VALUE. Forces provenance ARM64.
+libr15_names	libr15_so	no	static	the Quest ARM64 build, supplying only a NAME. Never a number, so it does not make the value ARM64.
+hand_transcript	hand_transcript	yes	both	tests/factcheck/facts_hand.h, transcribed by hand in decimal
+hand_struct_decl	hand_transcript	yes	both	a struct hand-declared beside its derivation
+R2_offline_match_load	R2	yes	both	research lane R2
+R4_wire_duv	R4	yes	both	research lane R4: the measured wire, its DUV stream and message layouts. A document about the capture, not the capture -- cite captured_wire_bytes for the bytes themselves.
+R5_identity_appearance	R5	yes	both	research lane R5
+R6_decimal	R6	yes	both	research lane R6, offsets quoted in decimal
+R6_appendix	R6	yes	both	research lane R6, address appendix
+R6_decompile	R6	yes	both	research lane R6, quoted decompiler output
+R6_physics_animation	R6	yes	both	research lane R6
+R7_camera_spectator	R7	yes	both	research lane R7
+R8_hex	R8	yes	both	research lane R8, offsets quoted in hex
+R8_table	R8	yes	both	research lane R8, tables
+R8_time_and_tick	R8	yes	both	research lane R8
+R9_audio	R9	yes	both	research lane R9
+R10_server_side_capture	R10	yes	both	research lane R10
+R12_tick_slot_reachability	R12	yes	both	research lane R12
+R13_slowmo_audio	R13	yes	both	research lane R13
+FEASIBILITY_BRIEF	brief	yes	both	the synthesis brief. S2 F1 records that it stripped per-row [U] markers.
+designA_appendix	design_synthesis	yes	both	DESIGN.md Appendix A
+designC_appendix	design_synthesis	yes	both	DESIGN.md Appendix C
+design_5_4_4	design_synthesis	yes	both	DESIGN.md S5.4.4
+design_7_2_2	design_synthesis	yes	both	DESIGN.md S7.2.2
+design_7_4_3	design_synthesis	yes	both	DESIGN.md S7.4.3
+design_F2_table	design_synthesis	yes	both	DESIGN.md S2 F2 export table
+design_F3_table	design_synthesis	yes	both	DESIGN.md S2 F3 table
+captured_wire_bytes	wire_capture	no	wire,runtime	bytes off the real wire. Evidence of what the running system EMITTED, not of struct layout.
+harness_observation	harness_runtime	no	runtime	a reading logged by the in-vivo harness from the mapped image or live state. Strong evidence of RUNTIME behaviour; weak evidence of static structure, because a mapped image can be patched after load.
+ida_pc_decompile	ida_extraction	no	static	the decompiled body of a PC function from that extraction. Same artifact as the other ida_db_* tokens, so it does not pair with them.

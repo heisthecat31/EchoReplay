@@ -1,0 +1,8 @@
+﻿{ "probe": "W2-H-audio", "verdict": "PASS", "checked": 1,
+  "provisional": true,
+  "checkCeiling": 8, "asked": 1, "notAsked": 7,
+  "unasked": [{ "check": "sink-proofs", "reason": "NO REASON WAS RECORDED: this check was forgotten, not excluded" }, { "check": "a6-module-agrees", "reason": "NO REASON WAS RECORDED: this check was forgotten, not excluded" }, { "check": "rate-baseline", "reason": "NO REASON WAS RECORDED: this check was forgotten, not excluded" }, { "check": "rate-0.5x", "reason": "NO REASON WAS RECORDED: this check was forgotten, not excluded" }, { "check": "rate-0.25x", "reason": "NO REASON WAS RECORDED: this check was forgotten, not excluded" }, { "check": "rate-0.1x", "reason": "NO REASON WAS RECORDED: this check was forgotten, not excluded" }, { "check": "offline-bit-lock", "reason": "NO REASON WAS RECORDED: this check was forgotten, not excluded" }],
+  "wwiseUpMs": 4100, "sinkWaitMs": 9250, "sinkPolls": 21,
+  "selectorFirstNonZeroMs": null, "sinkListFirstNonNullMs": null,
+  "token": "none",
+  "detail": "AK exports: 27 of 27 resolved by name | sound engine initialised at 4100 ms: GetAudioSettings reports 512 samples/frame, 48000 samples/s (engine settings, which exist before any output device)" }

@@ -1,0 +1,30 @@
+{
+  "probes": [
+    {
+      "id": "W1-L-wiretap",
+      "owner": "W1-L",
+      "dll": "build/W1-L/bin/probe_wiretap.dll",
+      "profile": "offline-local",
+      "completesAt": "match",
+      "why": "The three reads tests/wirefeed cannot construct offline. On the first tick with a non-null CR15NetGame it reports the RAW qword at +0x28C8 - the one runtime fact W1-L section 4 argued for and could not run - then registers the shipped IWiretap on SR15NetPlayerStateMsg, SR15NetReplicatedDeltaUnreliableVars and SR15NetComponentEvent, records the thread each callback arrives on against the tick thread, observes 60 s, calls UnlistenAll and watches 10 s of silence. It also re-reads the five entry-point prologues and hashes .text before the first Listen and after the last, which is the W1-L half of SC7. The offline feed check already proved the mechanism against a recorded session at 44.02 Hz; what this adds is the three inputs that had no constructible form without a live client.",
+      "scope": "THREE LIMITS, stated before the run. (1) ZERO CALLBACKS IS NOT A FAILURE HERE and the probe reports it as COULD-NOT-DETERMINE: an offline local match may legitimately carry no traffic on these symbols, and this probe cannot tell a quiet session from a wrong bus. tests/wirefeed is what separates those, offline, against a capture where the traffic is known to exist - so do not quote a non-zero count here as the rate check, and do not quote a zero as a defect. (2) This is NOT the SC7 runtime half. A diff declaring zero expected rows is refused by design (HARNESS section 7) and a Level-0 packet has zero rows to declare; what is established is the negative contribution, that W1-L adds nothing to whatever the ledger predicts. (3) The broadcaster read is one sample from one session on one profile; it settles whether a client-mode netgame carries a broadcaster, not whether it always does.",
+      "claims": [
+        "tick-slot"
+      ],
+      "guards": [
+        "offline-bit-lock"
+      ],
+      "answers": [
+        "wiretap-client-broadcaster",
+        "wiretap-callback-thread",
+        "wiretap-text-untouched"
+      ],
+      "artifacts": [
+        "wiretap.jsonl"
+      ],
+      "exclusive": false,
+      "timeoutSec": 240,
+      "timeoutJustification": "60 s of observation plus 10 s of post-teardown silence, both of which only start once a CR15NetGame exists, plus the session load ahead of them. The probe's own worker files a real verdict at 200 s whatever phase it reached, so it never holds the launch to the deadline: 240 s is headroom over that, not a wait on a game state that may not arrive."
+    }
+  ]
+}

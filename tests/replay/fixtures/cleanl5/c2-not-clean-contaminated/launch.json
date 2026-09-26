@@ -1,0 +1,8 @@
+{
+  "launch": {
+    "ProcessOutcome": "killed-by-harness",
+    "KillReason": "probes-complete",
+    "ProbesStillWaiting": [],
+    "Contaminated": true
+  }
+}

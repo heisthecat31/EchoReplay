@@ -1,0 +1,28 @@
+{
+  "probes": [
+    {
+      "id": "W1-D-attach-rlay",
+      "owner": "W1-D",
+      "dll": "build/W1-D/bin/probe_tickattach.dll",
+      "profile": "bare",
+      "completesAt": "attach",
+      "why": "the export surface the engine can actually reach, asked the way the engine asks it: GetProcAddress against our own loaded module for Update and RadPluginShutdown (must resolve) and for all eleven CNSProvider method names the engine's sub_140600820 census found (must all be null). Design S2 F8b's canary only fires after a wrong lookup has happened; this performs the lookup on the engine's behalf first. Also reads the 20 bytes standing at our Level 1 fallback site NETGAME_UPDATE in the MAPPED image, with rlay.dll PRESENT, plus a known-answer control. Asserts nothing that depends on engine state, so it cannot be an accident of timing",
+      "claims": [],
+      "artifacts": [
+        "done.json"
+      ]
+    },
+    {
+      "id": "W1-D-attach-norlay",
+      "owner": "W1-D",
+      "dll": "build/W1-D/bin/probe_tickattach.dll",
+      "profile": "bare-norlay",
+      "completesAt": "attach",
+      "why": "the same checks with rlay.dll MOVED ASIDE. The pair is the point: identical, correct prologue bytes at NETGAME_UPDATE under both conditions turns W1-C's offline finding that the intersection with rlay.dll's twelve targets is empty into a measurement taken at the one address W1-D would ever patch. Run it only if a bare-norlay launch is already being spent for another packet; on its own it is worth less than the displacement risk",
+      "claims": [],
+      "artifacts": [
+        "done.json"
+      ]
+    }
+  ]
+}

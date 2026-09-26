@@ -1,0 +1,5 @@
+{
+  "clause": 4,
+  "verdict": "not-clean",
+  "why": "w2f-csregister-epoch reports staleDetected=1: the epoch it certifies went stale during the launch, so its asked-pass does not carry clause 4."
+}

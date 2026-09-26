@@ -1,0 +1,9 @@
+{ "probe": "W2-H-audio", "verdict": "IN-PROGRESS", "checked": 1,
+  "provisional": true,
+  "completesAt": "match", "completionReached": false, "truncated": null, "matchSeenMs": null,
+  "checkCeiling": 8, "asked": 1, "notAsked": 7,
+  "unasked": [{ "check": "sink-proofs", "reason": "provisional: not yet reached" }, { "check": "a6-module-agrees", "reason": "provisional: not yet reached" }, { "check": "rate-baseline", "reason": "provisional: not yet reached" }, { "check": "rate-0.5x", "reason": "provisional: not yet reached" }, { "check": "rate-0.25x", "reason": "provisional: not yet reached" }, { "check": "rate-0.1x", "reason": "provisional: not yet reached" }, { "check": "offline-bit-lock", "reason": "NO REASON WAS RECORDED: this check was forgotten, not excluded" }],
+  "wwiseUpMs": 4100, "sinkWaitMs": 9250, "sinkPolls": 21,
+  "selectorFirstNonZeroMs": null, "sinkListFirstNonNullMs": null,
+  "token": "none",
+  "detail": "sample: the ledger state inside the sink wait" }

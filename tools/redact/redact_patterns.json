@@ -1,0 +1,220 @@
+{
+  "_comment": [
+    "ONE definition of the credential-redaction rule, imported by BOTH tools/redact/redact_captures.py",
+    "(the file tool) and tools/harness.ps1 (capture time). Neither side may carry its own copy.",
+    "safe_keys is an ALLOWLIST and starts EMPTY: every query-string value is redacted unless a key is",
+    "argued in here in review. controls is the near-miss corpus both engines must pass; every value",
+    "is synthetic (SYNTH-*) and no real value may ever be added. Rows whose expected equals input are",
+    "the over-redaction controls.",
+    "A serializer may write the separators escaped: & as \\u0026 (PowerShell 5.1's ConvertTo-Json), as \\U0026, or as &amp;; = as \\u003d; and // as \\/\\/. The patterns read all of those as the character they stand for, so a URI inside a JSON record is redacted past its first value and the detector is not blind to one - C28, C29, C31, C32, C33, C36.",
+    "param captures three groups: key, the separator it was written with, and the value. The separator is re-emitted verbatim so an escaped '=' survives the rewrite byte for byte.",
+    "The one shape no rule here can catch: a URI split across two strings or two lines. The orphan fragment carries no scheme, no host and no '?', and anything that claimed it would claim prose too (C07, C13, C14, C20). C39 and C40 state that limitation as controls so it stays a declared property."
+  ],
+  "marker": "<redacted>",
+  "safe_keys": [],
+  "uri": "[A-Za-z][A-Za-z0-9+.\\-]*:(?:/|\\\\/){2}(?:[^\\s\"'<>\\\\]|\\\\[uU]0026|\\\\[uU]003[dD]|\\\\/)+",
+  "authority": "(?<![A-Za-z0-9+.\\-/])(?:[A-Za-z0-9\\-]+(?:\\.[A-Za-z0-9\\-]+)+|\\[[0-9A-Fa-f:]+\\])(?::\\d{1,5})?(?:/[^\\s\"'<>\\\\?]*)?\\?(?:[^\\s\"'<>\\\\]|\\\\[uU]0026|\\\\[uU]003[dD])*(?:=|\\\\[uU]003[dD])(?:[^\\s\"'<>\\\\]|\\\\[uU]0026|\\\\[uU]003[dD])*",
+  "param": "(?:(?<=[?&])|(?<=\\\\[uU]0026)|(?<=&amp;))([A-Za-z0-9_.\\-]+(?:\\[[A-Za-z0-9_.\\-]*\\])?)(=|\\\\[uU]003[dD])([^&\\s\"'<>\\\\]*)",
+  "controls": [
+    {
+      "label": "C01 scheme uri, two params",
+      "input": "connection to ws://g.echovrce.com:80?discordid=SYNTH-111&password=SYNTH-AAA established",
+      "expected": "connection to ws://g.echovrce.com:80?discordid=<redacted>&password=<redacted> established"
+    },
+    {
+      "label": "C02 upper-case key",
+      "input": "ws://g.echovrce.com:80?PASSWORD=SYNTH-BBB",
+      "expected": "ws://g.echovrce.com:80?PASSWORD=<redacted>"
+    },
+    {
+      "label": "C03 mixed-case key",
+      "input": "ws://g.echovrce.com:80?PassWord=SYNTH-CCC",
+      "expected": "ws://g.echovrce.com:80?PassWord=<redacted>"
+    },
+    {
+      "label": "C04 keys the tool never enumerates - the allowlist proving itself",
+      "input": "ws://h.x/y?pw=SYNTH-D&passwd=SYNTH-E&token=SYNTH-F&auth=SYNTH-G",
+      "expected": "ws://h.x/y?pw=<redacted>&passwd=<redacted>&token=<redacted>&auth=<redacted>"
+    },
+    {
+      "label": "C05 near-miss key: a blocklist on the substring 'password' would mangle this key",
+      "input": "ws://h.x/y?passwordhint=SYNTH-H",
+      "expected": "ws://h.x/y?passwordhint=<redacted>"
+    },
+    {
+      "label": "C06 innocuous key - proves this is not value-matching",
+      "input": "ws://h.x/y?q=notapasswordatall",
+      "expected": "ws://h.x/y?q=<redacted>"
+    },
+    {
+      "label": "C07 PROSE - the decisive over-redaction control, must be untouched",
+      "input": "the password is logged by the engine, not by us; password= appears in prose here",
+      "expected": "the password is logged by the engine, not by us; password= appears in prose here"
+    },
+    {
+      "label": "C08 uri with no query - host and verb must survive",
+      "input": "connection to ws://g.echovrce.com:80 established",
+      "expected": "connection to ws://g.echovrce.com:80 established"
+    },
+    {
+      "label": "C09 empty value beside a real one",
+      "input": "ws://h.x/y?empty=&password=SYNTH-I",
+      "expected": "ws://h.x/y?empty=&password=<redacted>"
+    },
+    {
+      "label": "C10 the engine's Peer line shape",
+      "input": "Peer ws://g.echovrce.com:80?discordid=SYNTH-111&password=SYNTH-AAA update - 0xDEAD",
+      "expected": "Peer ws://g.echovrce.com:80?discordid=<redacted>&password=<redacted> update - 0xDEAD"
+    },
+    {
+      "label": "C11 SCHEMELESS authority - the gap the first cut missed",
+      "input": "g.echovrce.com:80?password=SYNTH-J",
+      "expected": "g.echovrce.com:80?password=<redacted>"
+    },
+    {
+      "label": "C12 identifier in prose, outside any query string - untouched by design",
+      "input": "[LOGIN] Logging in DMO-000000000000000000: {\"publisher_lock\":\"echovrce\"}",
+      "expected": "[LOGIN] Logging in DMO-000000000000000000: {\"publisher_lock\":\"echovrce\"}"
+    },
+    {
+      "label": "C13 prose with a dot and a question mark - untouched",
+      "input": "version 3.5? yes=maybe, but no host here",
+      "expected": "version 3.5? yes=maybe, but no host here"
+    },
+    {
+      "label": "C14 prose question - untouched",
+      "input": "which one? a=b",
+      "expected": "which one? a=b"
+    },
+    {
+      "label": "C15 idempotence - a second pass changes nothing",
+      "input": "ws://h.x/y?password=<redacted>",
+      "expected": "ws://h.x/y?password=<redacted>"
+    },
+    {
+      "label": "C16 CRLF survives byte-for-byte",
+      "input": "ws://h.x/y?password=SYNTH-K\r\n",
+      "expected": "ws://h.x/y?password=<redacted>\r\n"
+    },
+    {
+      "label": "C17 SCHEMELESS, MID-LINE, two params, tags before and verb after",
+      "input": "[TCP CLIENT] [R14NETCLIENT] connection to g.echovrce.com:80?discordid=SYNTH-17A&password=SYNTH-17B established",
+      "expected": "[TCP CLIENT] [R14NETCLIENT] connection to g.echovrce.com:80?discordid=<redacted>&password=<redacted> established"
+    },
+    {
+      "label": "C18 JSON BODY - a uri inside a JSON string value; the quotes and the rest of the object survive",
+      "input": "{\"peer\":\"ws://g.echovrce.com:80?discordid=SYNTH-18A&password=SYNTH-18B\",\"state\":\"open\"}",
+      "expected": "{\"peer\":\"ws://g.echovrce.com:80?discordid=<redacted>&password=<redacted>\",\"state\":\"open\"}"
+    },
+    {
+      "label": "C19 NEAR-MISS NEGATIVE: 'passwordless' in prose - untouched",
+      "input": "login is passwordless on this build",
+      "expected": "login is passwordless on this build"
+    },
+    {
+      "label": "C20 NEAR-MISS NEGATIVE: 'password_policy=' as a k=v in prose, no host - untouched",
+      "input": "password_policy=strict was read from config",
+      "expected": "password_policy=strict was read from config"
+    },
+    {
+      "label": "C21 NEAR-MISS NEGATIVE: 'discordid' inside a longer word in prose - untouched",
+      "input": "the discordidentity=SYNTH-21 label names this machine",
+      "expected": "the discordidentity=SYNTH-21 label names this machine"
+    },
+    {
+      "label": "C22 ...but inside a query string the allowlist redacts EVERY key, longer word or not",
+      "input": "ws://h.x/y?mydiscordid=SYNTH-22",
+      "expected": "ws://h.x/y?mydiscordid=<redacted>"
+    },
+    {
+      "label": "C23 the 2026-08-27 line shape, timestamped as the gamelog carries it, on the failed verb",
+      "input": "12:34:56.789 INFO  [TCP CLIENT] [R14NETCLIENT] connection to ws://g.echovrce.com:80?discordid=SYNTH-23A&password=SYNTH-23B failed",
+      "expected": "12:34:56.789 INFO  [TCP CLIENT] [R14NETCLIENT] connection to ws://g.echovrce.com:80?discordid=<redacted>&password=<redacted> failed"
+    },
+    {
+      "label": "C24 the census endpoint line - bracketed ip:port with no query - untouched",
+      "input": "[NSLOBBY] attempting connection to server [198.51.100.9:4202]",
+      "expected": "[NSLOBBY] attempting connection to server [198.51.100.9:4202]"
+    },
+    {
+      "label": "C25 a value that itself contains '=' is redacted whole",
+      "input": "ws://h.x/y?token=SYNTH-25a=b",
+      "expected": "ws://h.x/y?token=<redacted>"
+    },
+    {
+      "label": "C26 two uris on one line - both redacted",
+      "input": "from ws://a.b:1?k=SYNTH-26A to c.d.e:2?k=SYNTH-26B done",
+      "expected": "from ws://a.b:1?k=<redacted> to c.d.e:2?k=<redacted> done"
+    },
+    {
+      "label": "C27 schemeless inside a JSON string",
+      "input": "{\"peer\":\"g.echovrce.com:80?password=SYNTH-27\"}",
+      "expected": "{\"peer\":\"g.echovrce.com:80?password=<redacted>\"}"
+    },
+    {
+      "label": "C28 JSON-ESCAPED separator: PowerShell 5.1 writes & as \\u0026 inside JSON strings; every value after it must still go",
+      "input": "{\"args\":\"ws://g.echovrce.com:80?discordid=SYNTH-28A\\u0026password=SYNTH-28B established\"}",
+      "expected": "{\"args\":\"ws://g.echovrce.com:80?discordid=<redacted>\\u0026password=<redacted> established\"}"
+    },
+    {
+      "label": "C29 JSON-escaped separator on the schemeless form",
+      "input": "{\"args\":\"g.echovrce.com:80?discordid=SYNTH-29A\\u0026password=SYNTH-29B\"}",
+      "expected": "{\"args\":\"g.echovrce.com:80?discordid=<redacted>\\u0026password=<redacted>\"}"
+    },
+    {
+      "label": "C30 a backslash that is not the escaped separator ends the value; the tail is not a query",
+      "input": "ws://h.x/y?k=SYNTH-30\\n next line",
+      "expected": "ws://h.x/y?k=<redacted>\\n next line"
+    },
+    {
+      "label": "C31 HTML/XML-escaped separator: a writer that escapes & as &amp; must not hide every value past the first",
+      "input": "{\"peer\":\"ws://g.echovrce.com:80?discordid=SYNTH-31A&amp;password=SYNTH-31B\"}",
+      "expected": "{\"peer\":\"ws://g.echovrce.com:80?discordid=<redacted>&amp;password=<redacted>\"}"
+    },
+    {
+      "label": "C32 UPPER-CASE JSON escape \\U0026 - the same separator, the other spelling",
+      "input": "{\"args\":\"ws://h.x/y?a=SYNTH-32A\\U0026password=SYNTH-32B\"}",
+      "expected": "{\"args\":\"ws://h.x/y?a=<redacted>\\U0026password=<redacted>\"}"
+    },
+    {
+      "label": "C33 JSON-escaped scheme separator ws:\\/\\/ - the slashes a serializer escaped",
+      "input": "{\"peer\":\"ws:\\/\\/g.echovrce.com:80?password=SYNTH-33\"}",
+      "expected": "{\"peer\":\"ws:\\/\\/g.echovrce.com:80?password=<redacted>\"}"
+    },
+    {
+      "label": "C34 bracketed IPv6 authority with a query - a host form the dotted-label rule cannot see",
+      "input": "connection to [2001:db8::1]:80?password=SYNTH-34 established",
+      "expected": "connection to [2001:db8::1]:80?password=<redacted> established"
+    },
+    {
+      "label": "C35 array-style key ids[] - a key class without brackets leaves the value in cleartext",
+      "input": "ws://h.x/y?ids[]=SYNTH-35A&password=SYNTH-35B",
+      "expected": "ws://h.x/y?ids[]=<redacted>&password=<redacted>"
+    },
+    {
+      "label": "C36 JSON-escaped '=' (\\u003d): the separator is escaped, the value is not, and the escape survives the rewrite",
+      "input": "{\"args\":\"ws://h.x/y?password\\u003dSYNTH-36\"}",
+      "expected": "{\"args\":\"ws://h.x/y?password\\u003d<redacted>\"}"
+    },
+    {
+      "label": "C37 NEAR-MISS NEGATIVE: bracketed IPv6 with no query - the census line, untouched",
+      "input": "[NSLOBBY] attempting connection to server [::1]:6792",
+      "expected": "[NSLOBBY] attempting connection to server [::1]:6792"
+    },
+    {
+      "label": "C38 NEAR-MISS NEGATIVE: an array-style k=v in prose, no host - untouched",
+      "input": "ids[]=3 was read from the roster dump",
+      "expected": "ids[]=3 was read from the roster dump"
+    },
+    {
+      "label": "C39 DECLARED LIMITATION: a URI split across two JSON strings. The second fragment carries no scheme, no host and no '?', so no rule can claim it without also claiming prose (C07, C13, C14, C20). The first half IS redacted; the orphan is stated here so the blind spot is a recorded property of the rule rather than something an audit discovers.",
+      "input": "{\"a\":\"ws://g.echovrce.com:80?discordid=SYNTH-39A\",\"b\":\"password=SYNTH-39B\"}",
+      "expected": "{\"a\":\"ws://g.echovrce.com:80?discordid=<redacted>\",\"b\":\"password=SYNTH-39B\"}"
+    },
+    {
+      "label": "C40 DECLARED LIMITATION: the same split across two lines - a value on a line of its own is prose to any rule that must leave prose alone",
+      "input": "ws://g.echovrce.com:80?discordid=SYNTH-40A&\npassword=SYNTH-40B",
+      "expected": "ws://g.echovrce.com:80?discordid=<redacted>&\npassword=SYNTH-40B"
+    }
+  ]
+}

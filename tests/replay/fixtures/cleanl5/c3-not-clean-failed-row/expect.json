@@ -1,0 +1,5 @@
+{
+  "clause": 3,
+  "verdict": "not-clean",
+  "why": "F1: identical to clean-baseline but for ONE row's state. The moved row is deliberately NOT w2f-csregister-epoch -- moving that one moves clause 4 as well and the fixture would stop isolating clause 3."
+}

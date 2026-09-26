@@ -1,0 +1,5 @@
+{
+  "clause": 2,
+  "verdict": "could-not-ask",
+  "why": "batteryRan is ABSENT. The battery not having RUN and the record not SAYING are two different facts and only the second one is here."
+}

@@ -1,0 +1,5 @@
+{
+  "clause": 1,
+  "verdict": "not-clean",
+  "why": "ownerDraws == ownerDrawsAtLevel: not one draw landed after the level loaded, so the launch reached the level and drew nothing over it. Zero draws is a definite negative, not a gap."
+}

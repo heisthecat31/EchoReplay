@@ -1,0 +1,28 @@
+{
+  "probes": [
+    {
+      "id": "W1-E-match",
+      "owner": "W1-E",
+      "dll": "build/W1-E/bin/probe_entitymatch.dll",
+      "profile": "offline-local",
+      "completesAt": "match",
+      "timeoutSec": 120,
+      "timeoutJustification": "every read here needs a game space and a built component pool, which exist only after the match has loaded, so an attach-window run would report every read COULD-NOT-DETERMINE and buy nothing. The probe does not hold the launch open for the deadline: it settles 2 s, checks its call sites, walks the pointer chain, samples a 3 s window at ~60 Hz and files. On a launch that reaches a match it finishes seconds after the match does, and the harness's complete-on-report ends the launch then.",
+      "why": "THE ARM QUESTION, which W1-E raised against its own shipped code and which outranks everything else this packet has queued. CR15PlayerBroadcasterCS::UpdateAfterPhysics has two arms and picks between them on CR15NetGame::IsBotUser; E-4's ReadLocalPlayer reads the CR15EchoUnitCS accessors, which is the arm the engine takes when IsBotUser is TRUE, and for the local human the engine takes the other arm. If the EchoUnit component is not driven for a human then the owner's own hands are captured from a source the engine does not use for that entry. The probe samples the EchoUnit pose alongside the CR15TouchAnimBlendersCS trigger blends -- a signal read on the arm the engine DOES use for a human -- over one window: triggers moving while the pose does not is the falsification, both moving together is the confirmation, and neither is inferable from a single sample. It also carries the CModelCS visibility dword per user slot, which is what CR15NetSpectatorCameraCS::EnableRemoteHeads and EnableRemoteBodies set, because without it 'nothing moved' and 'nothing was drawn' are the same observation and every other conclusion from the sweep is unsafe.",
+      "scope": "ESTABLISHES, on offline-local only: that the CR15PlayerBroadcasterCS pool is non-empty in a match and is the engine's list of locally-authored players; that CR15EchoUnitCS resolves on the actor that pool names, which is the one step in the local-pawn chain with no static proof; whether the EchoUnit head and hand transforms VARY across a window, judged against an independently-live signal rather than against plausibility; and how many user slots have a CModelCS visibility dword set. DOES NOT ESTABLISH that the EchoUnit pose EQUALS what the tracking arm would produce -- that needs the 2192-stride input pool's CSymbol64, which W1-E has not derived; a moving pose proves the component is driven, not that the two arms agree. Says nothing about the VR path: this is one profile. Every check reports Ok, Failed or COULD-NOT-DETERMINE, and `checked` counts only the first two, so a launch that never reaches a match reports checked=0 rather than a confident nothing.",
+      "claims": [],
+      "guards": [],
+      "answers": [
+        "local-pose-arm-check",
+        "local-pose-varies",
+        "broadcaster-pool-nonempty",
+        "echounit-resolves-on-broadcaster-actor",
+        "model-visible-per-slot"
+      ],
+      "artifacts": [
+        "done.json"
+      ],
+      "exclusive": false
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "launch": {
+    "ProcessOutcome": "exited",
+    "KillReason": "self-exit",
+    "ProbesStillWaiting": [],
+    "Contaminated": false
+  }
+}

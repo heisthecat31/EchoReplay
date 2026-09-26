@@ -1,0 +1,16 @@
+{
+  "probes": [
+    {
+      "id": "W2-C-attach",
+      "owner": "W2-C",
+      "dll": "build/W2-C/bin/probe_identityattach.dll",
+      "profile": "bare",
+      "completesAt": "attach",
+      "why": "the cosmetic path calls ten engine functions and reasons about nine more, and a detour on any of them means W2-C dresses a player through somebody else's code and reports success -- the silent wrong-avatar failure this packet exists to remove. tests/identity/sitecheck.py already reads all of them out of echovr.exe ON DISK; a detour lands in the mapped image, not in the file, which is exactly why W1-C's first real sweep was refused by rlay.dll. This probe re-reads the same sites, plus the three byte-shape windows the hand-declared structs rest on (the 3<<4 customisation slot stride and the two ActorComponentRef field positions, neither of which any single instruction encodes), out of the image the loader actually mapped. A known-answer control runs first, so a comparison that always agreed cannot report a green it did not earn.",
+      "claims": [],
+      "artifacts": [
+        "done.json"
+      ]
+    }
+  ]
+}

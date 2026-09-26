@@ -1,0 +1,48 @@
+{
+  "probes": [
+    {
+      "id": "W1-C-bootstrap",
+      "owner": "W1-C",
+      "dll": "build/W1-C/bin/probe_bootstrap.dll",
+      "profile": "bare",
+      "completesAt": "attach",
+      "why": "the build guard's ACCEPT path, which no offline host can reach - md5, the RAD_Version string in the mapped image, and the ten recorded prologues against the bytes actually mapped - plus two known-answer controls proving the prologue comparison can still refuse, plus V-I11 coexistence with the real rlay.dll. Everything reported happens at WinMain statement 2, before the engine initialises: the 2026-08-28 sweep measured 78 ms from attach to verdict, so this needs no session, no arguments and no network. It also installs and declares the offline-bit-lock guard: sub_1401042B0 clears the offline mode bit at two sites and has seven callers, only two of which restore it, so without the lock the offline state is a configuration a menu script node can undo mid-launch rather than an invariant. The lock lives in src/bootstrap, which every probe DLL links, so any probe in the launch installs it - this one declares it.",
+      "claims": [],
+      "artifacts": [
+        "done.json"
+      ],
+      "reportsEgress": true,
+      "collect": [
+        "echoreplay.log"
+      ],
+      "exclusive": true,
+      "guards": [
+        "offline-bit-lock"
+      ]
+    },
+    {
+      "id": "W1-C-offlinelock",
+      "owner": "W1-C",
+      "dll": "build/W1-C/bin/probe_offlinelock.dll",
+      "profile": "offline-local",
+      "completesAt": "match",
+      "why": "The offline-bit lock, on the only launch that can exercise it. sub_1401042B0 clears the offline mode bit at two sites and has seven callers, of which only two restore it - the image contains exactly two `or [reg+OFF],BIT` instructions and both live in those two - so five paths, one of them reachable from a menu script node, leave the bit clear and let the next pass through sub_140157FB0 instantiate matchmaking for real. The lock is a MinHook chaining detour on the teardown that restores the bit only if it was set on entry, which covers all seven callers and is inert in any session that never went offline. This probe carries the lock's own instrument - calls, clearsPrevented, callsBitAlreadyClear, callsBitUntouched - so the declaration is backed by evidence rather than by the fact that the DLL links the bootstrap. It also carries three clock reads that have no offline form.",
+      "scope": "THREE LIMITS. (1) A zero call count is NOT a failure and is reported as `not-exercised`: whether a menu script node fires is a property of what the session did, not of our correctness, so the verdict is PASS on an installed lock with a discriminating self-test and the Exercise value is reported beside it as a separate fact. (2) In a multi-probe launch only one module can hold the trampoline; the others report `already-locked-in-process`, which is a safe state, and the counters are read from a per-process shared mapping so the reporting module need not be the installing one. (3) The clock reads are one session on one profile: CLOCK.MINELAPSED_OFF and CLOCK.MAXELAPSED_OFF are set-once configuration and reported as single late samples, while the timescale is live and reported as a change-only time series - a single sample of it would be a sample from a moment nobody chose.",
+      "claims": [],
+      "guards": [
+        "offline-bit-lock"
+      ],
+      "answers": [
+        "clock-min-clamp",
+        "clock-max-elapsed",
+        "game-clock-timescale"
+      ],
+      "artifacts": [
+        "done.json"
+      ],
+      "exclusive": false,
+      "timeoutSec": 240,
+      "timeoutJustification": "150 s of sampling that only becomes meaningful once a level has loaded, plus the session load ahead of it. The probe's own thread files a real verdict at the 150 s mark whatever phase the client reached, so it never holds the launch to the deadline; 240 s is headroom over that, not a wait on a game state that may not arrive."
+    }
+  ]
+}

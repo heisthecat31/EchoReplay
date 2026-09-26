@@ -1,0 +1,53 @@
+{
+  "timeoutSec": 6,
+  "probes": [
+    {
+      "id": "W1-F-attach",
+      "owner": "W1-F",
+      "dll": "build/W1-F/bin/probe_session.dll",
+      "profile": "bare",
+      "why": "measure, inside the attach window and calling nothing, the things that decide whether the offline run is safe: the egress blocker armed before any socket existed, CR15Game reachable this early, the two mode bits as this launch's switches predict them (none here, so both SET), and SE-B selected so the stock call is guarded and callable. S4 and S7 are NOT-ASKED on this profile: it carries no -httpport and no switch at all, so neither has anything to refute",
+      "completesAt": "attach",
+      "claims": [
+        "session-entry"
+      ],
+      "artifacts": [
+        "sockets.jsonl"
+      ],
+      "exclusive": false,
+      "timeoutSec": 6
+    },
+    {
+      "id": "W1-F-attach-norlay",
+      "owner": "W1-F",
+      "dll": "build/W1-F/bin/probe_session.dll",
+      "profile": "bare-norlay",
+      "why": "the same checks with rlay.dll moved aside (S4 and S7 NOT-ASKED here too: no -httpport, no switch). This is the works-with-and-without-rlay half of W1-F acceptance, and it is worth measuring rather than reasoning about because rlay detours CLI.APPLY and the NetGame state machine - both of which W1-F reads around",
+      "completesAt": "attach",
+      "claims": [
+        "session-entry"
+      ],
+      "artifacts": [
+        "sockets.jsonl"
+      ],
+      "exclusive": false,
+      "timeoutSec": 6
+    },
+    {
+      "id": "W1-F-level",
+      "owner": "W1-F",
+      "dll": "build/W1-F/bin/probe_session.dll",
+      "profile": "bare-level",
+      "why": "test the prediction W1-J recorded before the run: with -level supplied, ApplyCommandLine's cmp [rdi+0x950],-1 at 0x140116CD5 does not fall through, so modeFlags bit 25 (boot into multiplayer) is CLEAR and SessionFlags bit 0 (online) is CLEAR. LIMIT, stated first: this run cannot show that -level prevents login. The window closes at 6 s and login was measured at ~8 s, so a quiet network is the expected result whether the lever works or not. It establishes the two bits and nothing about login suppression - pnsrad is created unconditionally, with no bit-27 test, and login lives there",
+      "completesAt": "attach",
+      "claims": [
+        "session-entry"
+      ],
+      "artifacts": [
+        "sockets.jsonl"
+      ],
+      "exclusive": false,
+      "timeoutSec": 6
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{ "probe": "W2-H-audio", "verdict": "NOT-RUN", "checked": 7,
+  "provisional": false,
+  "completesAt": "match", "completionReached": false, "truncated": true, "matchSeenMs": null,
+  "checkCeiling": 8, "asked": 7, "notAsked": 1,
+  "unasked": [{ "check": "offline-bit-lock", "reason": "provisional: not yet reached" }],
+  "wwiseUpMs": 4100, "sinkWaitMs": 9250, "sinkPolls": 21,
+  "selectorFirstNonZeroMs": 30500, "sinkListFirstNonNullMs": 30500,
+  "token": "none",
+  "detail": "sample: every check asked and held, but no live CR15NetGame inside the deadline" }
