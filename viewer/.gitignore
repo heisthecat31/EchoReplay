@@ -1,0 +1,58 @@
+# EchoReplayViewer: only this project's own sources are tracked (src/, assets/, CMakeLists.txt, build.bat).
+
+# Build output. build/ also holds the renderer's copied shaders/, bake/, data/, ui/, script/ and libraries.
+build/
+build-*/
+out/
+cmake-build-*/
+CMakeUserPresets.json
+CMakeCache.txt
+CMakeFiles/
+
+# Binaries (renderer libraries, echoreplay_reader, game plugins): never tracked
+*.exe
+*.dll
+*.lib
+*.exp
+*.pdb
+*.ilk
+*.obj
+*.idb
+
+# The folders the renderer reads beside the exe, if they ever land outside build/
+/shaders/
+/bake/
+/data/
+/ui/
+/script/
+/corpus/
+/recon/
+
+# EDITH HUD / E.D.I.T.H: its checkout, plugin and settings, if they ever land here
+EDITH-Hud/
+E.D.I.T.H*/
+*EDITHHud*
+*EDITH_HUD*
+EDITH*.ini
+EDITH*.log
+
+# Replays, clips and run output
+*.echodemo
+*.echoreplay
+*.tape
+clips/
+*.log
+*.png
+!assets/**/*.png
+*.bmp
+
+# Editors and tools
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+__pycache__/
+*.pyc
+scratchpad/
+_scratch/

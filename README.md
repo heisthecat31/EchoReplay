@@ -112,7 +112,7 @@ EchoReplayViewer is a separate desktop app that plays recordings without startin
 What the recording does not carry is left out, not made up: fingers only close with the trigger (no
 grip or finger data), and the recorder's own team is worked out from who they played near.
 
-Build it from its own folder with `build.bat` (Visual Studio, CMake and Ninja). `build.bat deps` also
+It is in `viewer\` in this repo. Build it there with `build.bat` (Visual Studio, CMake and Ninja). `build.bat deps` also
 rebuilds the libraries it links.
 
 ## Old replays (.echoreplay, .tape)
