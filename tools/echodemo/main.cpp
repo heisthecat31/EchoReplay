@@ -16,6 +16,7 @@
 #include <utility>
 #include <vector>
 
+#include "capture/clipcut.h"
 #include "capture/keyframe.h"
 #include "capture/roster.h"      // RecordTeamAgreesWithFill: the writer's rule, not a copy
 #include "capture/streamcodec.h"
@@ -1112,6 +1113,30 @@ int CmdStrip(const wchar_t* in, const wchar_t* out, uint32_t mask) {
     return res.verified ? 0 : 2;
 }
 
+int CmdClip(const wchar_t* in, const wchar_t* out, double lastS, double fromS, double toS) {
+    uint64_t fromUs = 0, toUs = 0;
+    const uint64_t begin = capture::RecordingBeginUs(in);
+    if (lastS > 0) {
+        const uint64_t end = capture::RecordingEndUs(in);
+        const uint64_t span = static_cast<uint64_t>(lastS * 1e6);
+        fromUs = end > span ? end - span : 0;
+    } else {
+        fromUs = begin + static_cast<uint64_t>(fromS * 1e6);
+        if (toS > 0) toUs = begin + static_cast<uint64_t>(toS * 1e6);
+    }
+    const capture::ClipResult r = capture::ClipRange(in, out, fromUs, toUs);
+    if (!r.ok) {
+        printf("CLIP FAILED: %s\n", r.error ? r.error : "unknown");
+        return 2;
+    }
+    printf("chapters in      : %u\n", r.chaptersIn);
+    printf("chapters out     : %u (%u undecodable dropped)\n", r.chaptersOut, r.undecodable);
+    printf("identity carried : %u\n", r.identityCarried);
+    printf("window           : %.2f s .. %.2f s (%.2f s)\n", (r.firstUs - begin) / 1e6,
+           (r.lastUs - begin) / 1e6, (r.lastUs - r.firstUs) / 1e6);
+    return 0;
+}
+
 // ---- fuzz ------------------------------------------------------------------------------------
 // A verification instrument, so it states what it covers and what it does not, and it is deterministic
 // under a seed so a failure is reproducible.
@@ -1300,6 +1325,8 @@ int Usage() {
     printf("  convert <in.echoreplay|in.tape> <out.echodemo> [--session N] [--rate 45] [--report <json>]\n");
     printf("                 legacy holes become known import gaps; the report is <out>.import.json\n");
     printf("  strip  <in> <out> --voip [--asseen] [--oracle]\n");
+    printf("  clip   <in> <out> --last <seconds> | --from <s> [--to <s>]\n");
+    printf("                 cut a window out (works on a recording still being written)\n");
     printf("  voip   <file>   one CSV row per recorded voice frame\n");
     printf("  rows   <file> --what player|body|event|netvar|gamestate|roster [--from s] [--to s]\n");
     printf("                 decoded records as CSV on the capture axis; no names or account ids\n");
@@ -1379,6 +1406,17 @@ int wmain(int argc, wchar_t** argv) {
             return Usage();
         }
         return CmdStrip(argv[2], argv[3], mask);
+    }
+    if (Eq(cmd, L"clip")) {
+        if (argc < 6) return Usage();
+        double last = 0, from = 0, to = 0;
+        for (int i = 4; i < argc; ++i) {
+            if (Eq(argv[i], L"--last") && i + 1 < argc) last = _wtof(argv[++i]);
+            else if (Eq(argv[i], L"--from") && i + 1 < argc) from = _wtof(argv[++i]);
+            else if (Eq(argv[i], L"--to") && i + 1 < argc) to = _wtof(argv[++i]);
+            else return Usage();
+        }
+        return CmdClip(argv[2], argv[3], last, from, to);
     }
     if (Eq(cmd, L"fuzz")) {
         uint64_t seed = 1;

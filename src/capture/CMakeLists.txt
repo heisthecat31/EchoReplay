@@ -19,7 +19,8 @@ add_library(replay_capture STATIC
     costmeter.cpp
     capturesecs.cpp
     capturestop.cpp
-    ringset.cpp)
+    ringset.cpp
+    clipcut.cpp)
 target_link_libraries(replay_capture PRIVATE replay_flags
                       PUBLIC bitio replay_demofile replay_ring replay_events)
 target_include_directories(replay_capture PUBLIC ${CMAKE_SOURCE_DIR}/src)
@@ -31,6 +32,8 @@ target_include_directories(replay_capture PUBLIC ${CMAKE_SOURCE_DIR}/src)
 # makes this unnecessary.
 target_sources(echoreplay_core PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/capture.cpp
+    # The clip service's exports (EchoReplay_Clip / EchoReplay_ClipStatus) for EDITH-HUD.
+    ${CMAKE_CURRENT_SOURCE_DIR}/clipservice.cpp
     # BACKLOG-1. The read-only status provider. On the DLL and not in replay_capture above,
     # because its REPLAY_MODULE registrar is referenced by nothing and a static library drops the
     # object that holds it.

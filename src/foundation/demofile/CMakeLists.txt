@@ -11,3 +11,4 @@ target_include_directories(replay_demofile PUBLIC ${CMAKE_SOURCE_DIR}/src)
 # tools/ is outside the root CMakeLists.txt globs (src/ and tests/ only), so the CLI is added from the
 # module it belongs to. Both files are W1-B's, so this creates no shared edit.
 add_subdirectory(${CMAKE_SOURCE_DIR}/tools/echodemo ${CMAKE_BINARY_DIR}/tools/echodemo)
+add_subdirectory(${CMAKE_SOURCE_DIR}/tools/viewerapi ${CMAKE_BINARY_DIR}/tools/viewerapi)

@@ -357,6 +357,9 @@ struct Module {
     std::atomic<bool> manualStart{false};   // `record start`, consumed by the next tick
     bool sessionGateSaid = false;           // the classification is named once per session
     wchar_t replayDir[kPathMax] = {};
+    // The file the worker is writing now, for the clip service (another thread). Guarded by curLock.
+    SRWLOCK curLock = SRWLOCK_INIT;
+    wchar_t curPath[kPathMax] = {};
 
     // ---- session state, written by the tick, read by the worker --------------------------------
     struct OpenParams {
@@ -2469,6 +2472,9 @@ bool OpenFile() {
         NoteOpenFailure(OpenFailKind::WriterOpen, what);
         return false;
     }
+    AcquireSRWLockExclusive(&g.curLock);
+    wcscpy_s(g.curPath, kPathMax, path);
+    ReleaseSRWLockExclusive(&g.curLock);
     g.builder.captureRole = g.pending.captureRole;
     g.builder.keyframeIntervalUs = g.cost.KeyframeIntervalUs();
     // DemoWriter::WritePlayerStats is non-virtual -- Appendix B.2's IDemoWriter signatures are
@@ -4472,6 +4478,16 @@ void RequestManualRecordStart() { g.manualStart.store(true, std::memory_order_re
 bool CaptureSessionRecordable(const char** kind) {
     if (kind) *kind = livesafety::VerdictName(livesafety::Current());
     return livesafety::Current() == livesafety::Verdict::LiveOnlineExempt || g.forceOffline;
+}
+
+void CaptureRecordingPaths(wchar_t* dir, size_t dirCap, wchar_t* cur, size_t curCap) {
+    if (dir && dirCap) wcscpy_s(dir, dirCap, g.replayDir);
+    if (cur && curCap) {
+        cur[0] = 0;
+        AcquireSRWLockShared(&g.curLock);
+        if (g.phase.load(std::memory_order_acquire) == Phase::Recording) wcscpy_s(cur, curCap, g.curPath);
+        ReleaseSRWLockShared(&g.curLock);
+    }
 }
 
 bool RequestManualRecordStop() {

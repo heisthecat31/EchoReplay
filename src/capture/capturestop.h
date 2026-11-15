@@ -465,5 +465,9 @@ void RecordStatusLine(char* out, size_t cap);
 // contained playback session; `kind` is filled with the session kind to say so by name.
 bool CaptureSessionRecordable(const char** kind);
 
+// For the clip service: the recordings folder, and the file being written now (empty when nothing
+// is recording). Safe from any thread.
+void CaptureRecordingPaths(wchar_t* dir, size_t dirCap, wchar_t* cur, size_t curCap);
+
 }  // namespace capture
 }  // namespace replay

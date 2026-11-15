@@ -46,6 +46,15 @@ file in `Documents\EchoReplay\`. Offline sessions and replays are never recorded
 - F9 shows the player window. Its Record button starts or stops a recording by hand.
 - To record only when you ask, set `capture.auto_record` to `false` (see [CONFIG](docs/CONFIG.md)).
 
+### Clips
+
+`echodemo clip <in> <out> --last 180` (or `--from 60 --to 240`, seconds) cuts a window out of a recording,
+including one that is still being written. Names, numbers and cosmetics from before the window are carried
+into the clip. Other plugins can ask for one in game: `EchoReplay_Clip(seconds)` / `EchoReplay_ClipStatus(job,
+out, cap)` (exported by `EchoReplay.dll`) cut the last N seconds across the current and earlier match files
+into `Documents\EchoReplay\clips\<time>.json`, which lists the parts oldest first. EDITH-HUD's
+"Edith, clip the last 3 minutes" uses this.
+
 ## Watch
 
 Close the game, then run (`-DryRun` shows what would run):
@@ -80,6 +89,31 @@ Low / Med / High), **Open replay...**, Unload, player width and timeline markers
 
 A console window opens with the game. Type `help` for the list, for example `seek 1:23`,
 `speed 0.25`, `round 3`, `cam follow 2`, `mark`, `record stop`.
+
+## Watch without the game (EchoReplayViewer)
+
+EchoReplayViewer is a separate desktop app that plays recordings without starting Echo VR. It reads
+`.echodemo` files and EDITH clips (`clips\*.json`) through the reader in `tools\viewerapi`.
+
+- A library of your recordings, split into Arena, Combat, Social Lobby, EDITH clips and older formats.
+  Each card shows a picture of its map, shared by every replay on that map.
+- The real map, loaded from your Echo VR install.
+  Opening a replay loads in the background, so the window stays responsive (combat maps and the lobby take
+  up to half a minute).
+- Players drawn with the game's own chassis and cosmetics. The body follows the head's pitch and roll.
+- The arena's screens filled from the recording: score, clock, and the goal board with the goal type,
+  scorer, assist, disc speed, distance and time, readable from both sides.
+- Hover a player for their team, speed, goals and stuns. Hover the disc for its speed, the last goal's
+  speed and who touched it last.
+- A Players panel with Blue, Orange and Spectators, taken from the match roster, so a player who left
+  and rejoined is listed once.
+- Camera modes: free, follow, POV, disc and overhead. Recorded voice plays per player.
+
+What the recording does not carry is left out, not made up: fingers only close with the trigger (no
+grip or finger data), and the recorder's own team is worked out from who they played near.
+
+Build it from its own folder with `build.bat` (Visual Studio, CMake and Ninja). `build.bat deps` also
+rebuilds the libraries it links.
 
 ## Old replays (.echoreplay, .tape)
 
@@ -117,6 +151,17 @@ echodemo strip   <in> <out> --voip       remove voice before sharing
   decoded. `playback.async_window_decode` moves it off the frame but is experimental.
 - The offline mode writes to the game's code in memory. Antivirus tools have flagged this kind of
   write before.
+
+## Credits
+
+- **EchoReplay** was originally made by [C-Luddy](https://github.com/C-Luddy).
+- **[EchoTools Demo Viewer](https://github.com/EchoTools/demo-viewer)** was originally made by David Robidas
+  ([@robidasdavid](https://github.com/robidasdavid)) and Zzenith (2020). The EchoTools fork is maintained by
+  Andrew Bates and babs-VR. EchoReplayViewer's player rig and its head-and-hands body solve follow the demo
+  viewer's player prefab and IK controller.
+- **Echo VR** and its maps, models and art are by Ready At Dawn. The map pictures in the viewer are from the
+  game and belong to their owners.
+- Older replay formats: Spark (`.echoreplay`) and EchoTools tapedeck (`.tape`).
 
 ## More
 
