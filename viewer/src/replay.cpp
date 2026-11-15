@@ -2,6 +2,8 @@
 
 #include <windows.h>
 
+#include "paths.h"
+
 #include <algorithm>
 #include <fstream>
 #include <map>
@@ -23,7 +25,7 @@ std::map<uint64_t, std::string>& Roster() {
     static bool loaded = false;
     if (loaded) return r;
     loaded = true;
-    std::ifstream f(std::filesystem::path(ERV_ECHOCONSTRUCT_DIR) / "registry" / "level_roster.tsv");
+    std::ifstream f(viewer_paths::EchoConstructData() / "registry" / "level_roster.tsv");
     std::string line;
     while (std::getline(f, line)) {
         if (line.empty() || line[0] == '#') continue;

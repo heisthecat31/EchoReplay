@@ -3,6 +3,7 @@
 #include "scriptvm.h"
 
 #include <windows.h>
+#include "paths.h"
 #include <shlobj.h>
 
 #include <algorithm>
@@ -450,7 +451,7 @@ bool Levels::TryLoad(const std::string& level) {
     auto loaded = std::make_unique<Loaded>();
     ui::EditorSession& session = loaded->session;
     ui::HeadlessOptions src;
-    const std::filesystem::path ec_dir = ERV_ECHOCONSTRUCT_DIR;
+    const std::filesystem::path ec_dir = viewer_paths::EchoConstructData();
     src.corpus = corpus_;
     src.symbol_pool = ec_dir / "recon" / "name_recovery" / "symbol_pool.txt";
     src.level_names = ec_dir / "recon" / "name_recovery" / "level_names.json";

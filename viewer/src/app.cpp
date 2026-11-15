@@ -5,6 +5,8 @@
 //           with goals / stuns / bookmarks, 0.1x-4x either way, frame steps, five cameras, names, voice markers
 
 #include <windows.h>
+#include "paths.h"
+#include "spark_settings.h"
 #include <shellapi.h>
 #include <shlobj.h>
 #include <shobjidl.h>
@@ -539,7 +541,7 @@ fs::path ConvertLegacy(const fs::path& in) {
     std::error_code ec;
     fs::create_directories(out.parent_path(), ec);
     if (fs::exists(out, ec)) return out;
-    const std::wstring exe = std::wstring(ERV_ECHOREPLAY_BIN) + L"\\echodemo.exe";
+    const std::wstring exe = viewer_paths::EchodemoExe().wstring();
     std::wstring cmd = L"\"" + exe + L"\" convert \"" + in.wstring() + L"\" \"" + out.wstring() + L"\"";
     STARTUPINFOW si{sizeof si};
     PROCESS_INFORMATION pi{};
@@ -2423,6 +2425,9 @@ void MountGame() {
     std::vector<fs::path> installs;
     const std::wstring chosen = IniGet(L"echo");
     if (!chosen.empty() && IsEchoInstall(chosen)) installs.push_back(chosen);
+    // then the one Spark launches (its settings.json echoVRPath), then every install the search finds
+    const fs::path fromSpark = EchoInstallFor(spark_settings::EchoVRExe());
+    if (IsEchoInstall(fromSpark) && (installs.empty() || _wcsicmp(installs.front().c_str(), fromSpark.c_str()) != 0)) installs.push_back(fromSpark);
     for (const fs::path& p : FindEchoInstalls()) {
         bool dup = false;
         for (auto& q : installs) dup |= _wcsicmp(q.c_str(), p.c_str()) == 0;
@@ -2573,12 +2578,16 @@ int WINAPI wWinMain(HINSTANCE inst, HINSTANCE, PWSTR, int) {
         a = b + 1;
     }
     SetRecorderName(U8(IniGet(L"me", L"You")));   // what to call the person who recorded (ini me=)
-    std::wstring folder = IniGet(L"folder");
-    if (folder.empty()) {
-        PWSTR p = nullptr;
-        if (SUCCEEDED(SHGetKnownFolderPath(FOLDERID_Documents, 0, nullptr, &p))) folder = std::wstring(p) + L"\\EchoReplay";
-        CoTaskMemFree(p);
+    // Spark's replay folder (settings.json saveFolder, where Spark has EchoReplay record) and Documents\EchoReplay
+    // (the plugin's own default) are always in the folder list
+    const std::wstring sparkFolder = spark_settings::ReplayFolder().wstring();
+    const std::wstring docsFolder = (spark_settings::KnownFolder(FOLDERID_Documents) / "EchoReplay").wstring();
+    for (const std::wstring& f : {docsFolder, sparkFolder}) {
+        if (!f.empty() && std::find(g.recent.begin(), g.recent.end(), f) == g.recent.end()) g.recent.push_back(f);
     }
+    // the folder: last used, else Spark's replay folder, else Documents\EchoReplay
+    std::wstring folder = IniGet(L"folder");
+    if (folder.empty()) folder = sparkFolder.empty() ? docsFolder : sparkFolder;
     SetFolder(folder);
 
     int argc = 0;

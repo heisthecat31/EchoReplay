@@ -14,3 +14,4 @@ scratchpad/
 *.tape
 !tests/import/data/sample.echoreplay
 !tests/import/data/sample.tape
+release/
